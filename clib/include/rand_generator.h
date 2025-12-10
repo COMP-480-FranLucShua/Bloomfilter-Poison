@@ -9,6 +9,8 @@
 typedef struct
 {
     pcg32_random_t pcg;
+    double gamma_alpha;
+    double gamma_theta;
 } RandomGenerator;
 
 // *** CONSTRUCTOR/DESTRUCTOR
@@ -65,7 +67,7 @@ uint32_t * rng_generate_choice(RandomGenerator *rng, size_t range, uint32_t *arr
 
 // *** RANDOM DISTRIBUTIONS
 
-double rng_generate_gamma(RandomGenerator *rng, double alpha, double theta);
-double * rng_generate_gamma_array(RandomGenerator *rng, double alpha, double theta, double *array, size_t len);
+double rng_generate_gamma(RandomGenerator *rng);
+double rng_generate_gamma_params(RandomGenerator *rng, double alpha, double theta);
 
 #endif // RAND_GENERATOR_H

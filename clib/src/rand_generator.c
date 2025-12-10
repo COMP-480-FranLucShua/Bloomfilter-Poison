@@ -11,6 +11,9 @@ RandomGenerator *rng_new(uint64_t init_state, uint64_t init_seq) {
 
     pcg32_srandom_r(&(rng->pcg), init_state, init_seq);
 
+    rng->gamma_alpha = 1.0;
+    rng->gamma_theta = 1.0;
+
     return rng;
 }
 
@@ -136,17 +139,14 @@ double gamma_mt_small(RandomGenerator *rng, double alpha)
     return gamma_mt(rng, alpha + 1.0) * pow(u, 1.0 / alpha);
 }
 
-double rng_generate_gamma(RandomGenerator *rng, double alpha, double theta) {
+double rng_generate_gamma(RandomGenerator *rng) {
+    return rng_generate_gamma_params(rng, rng->gamma_alpha, rng->gamma_theta);
+}
+
+double rng_generate_gamma_params(RandomGenerator *rng, double alpha, double theta) {
     double g = (alpha < 1.0)
         ? gamma_mt_small(rng, alpha)
         : gamma_mt(rng, alpha);
 
     return g * theta;
-}
-
-double * rng_generate_gamma_array(RandomGenerator *rng, double alpha, double theta, double *array, size_t len) {
-    for (size_t i = 0; i < len; i++) {
-        array[i] = rng_generate_gamma(rng, alpha, theta);
-    }
-    return array;
 }
