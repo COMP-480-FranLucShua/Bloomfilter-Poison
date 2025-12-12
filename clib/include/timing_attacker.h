@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "interfaces/filter.h"
+#include "interfaces/system.h"
 #include "interfaces/sampler.h"
 
 // Opaque struct -- implementation is hidden in the .c file
