@@ -1,6 +1,13 @@
 #include <stdlib.h>
 #include "system.h"
 
+struct SystemEmulator {
+    HashSet *set;
+    BloomFilter *bfilter;
+    RandomGenerator *rng;
+    double system_delay;
+};
+
 SystemEmulator *sys_new(HashSet *set, BloomFilter *bfilter, RandomGenerator *rng, double delay) {
     SystemEmulator *sys = (SystemEmulator *)malloc(sizeof(SystemEmulator));
 

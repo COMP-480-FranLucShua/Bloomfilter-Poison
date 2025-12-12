@@ -1,19 +1,11 @@
 #ifndef BLOOM_FILTER_H
 #define BLOOM_FILTER_H
+#include <stddef.h>
+#include "rand_generator.h"
 
+typedef struct BloomFilter BloomFilter;
 
-#include "bit_vector.h"
-#include "hash_family.h"
-
-typedef struct
-{
-    size_t filter_range;
-    size_t k;
-    HashFamily *hash_family;
-    BitVector *filter;
-
-} BloomFilter;
-
+BloomFilter *bfilter_new(size_t size, size_t k, RandomGenerator *rng);
 BloomFilter *bfilter_new(HashFamily *hash_family);
 void *bfilter_destroy(BloomFilter *);
 

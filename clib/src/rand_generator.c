@@ -3,13 +3,25 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+#include "pcg/pcg_basic.h"
 #include "rand_generator.h"
+#include "murmur_hash.h"
+#include "hash_set.h"
+
+struct RandomGenerator {
+    pcg32_random_t pcg;
+    double gamma_alpha;
+    double gamma_theta;
+};
 
 // *** CONSTRUCTOR/DESTRUCTOR
-RandomGenerator *rng_new(uint64_t init_state, uint64_t init_seq) {
+RandomGenerator *rng_new(uint32_t seed) {
     RandomGenerator *rng = (RandomGenerator *)malloc(sizeof(RandomGenerator));
 
-    pcg32_srandom_r(&(rng->pcg), init_state, init_seq);
+    const uint64_t default_state[] = PCG32_INITIALIZER;
+
+    pcg32_srandom_r(&(rng->pcg), default_state[0], seed);
 
     rng->gamma_alpha = 1.0;
     rng->gamma_theta = 1.0;
@@ -32,6 +44,12 @@ RandomGenerator *rng_clone(RandomGenerator *rng) {
     rng_new->pcg.inc = rng->pcg.inc;
 
     return rng_new;
+}
+
+// *** SETTER
+void rng_set_gamma_params(RandomGenerator *rng, double alpha, double theta) {
+    rng->gamma_alpha = alpha;
+    rng->gamma_theta = theta;
 }
 
 // *** VALUE GENERATOR FUNCTIONS
@@ -98,6 +116,21 @@ uint32_t * rng_generate_choice(RandomGenerator *rng, size_t range, uint32_t *arr
 
         // save result
         array[i] = pool[i];
+    }
+
+    return array;
+}
+
+uint32_t * rng_generate_int32_array_unique(RandomGenerator *rng, uint32_t *array, size_t len) {
+    HashSet *set = hset_new(256, 0xDEADBEEF, murmur3_32);
+
+    for (size_t i = 0; i < len; i++) {
+        uint32_t num = rng_generate_int32(rng);
+        while (hset_query(set, num)) {
+            num = rng_generate_int32(rng);
+        }
+        hset_insert(num);
+        array[i] = num;
     }
 
     return array;

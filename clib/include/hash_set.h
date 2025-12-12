@@ -5,30 +5,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-typedef uint32_t (*HSetHashFunction)(const uint8_t *val, size_t len, uint32_t seed);
-
-typedef enum {
-    EMPTY,
-    ACTIVE,
-    DUMMY
-} HSet_ProbeState;
-
-typedef struct {
-    void *item; // the actual object hashed
-    size_t size;
-    uint32_t hash; // cached hash
-    HSet_ProbeState status; // bucket status
-} HSet_Bucket;
-
-typedef struct {
-    size_t capacity; // total number of buckets
-    size_t fill; // # active/dummy slots
-    size_t used; // # active slots
-    uint32_t mask; // table size - 1
-    uint32_t seed; // table hash seed
-    HSetHashFunction hash_function; // hash function
-    HSet_Bucket *table; // array of entries
-} HashSet;
+typedef struct HashSet HashSet;
 
 HashSet * hset_new(size_t starting_capacity, uint32_t seed, HSetHashFunction hash_function);
 void * hset_destroy(HashSet *);

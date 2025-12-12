@@ -4,6 +4,31 @@
 #include <string.h>
 #include <stdio.h>
 
+typedef uint32_t (*HashFunction)(const uint8_t *val, size_t len, uint32_t seed);
+
+typedef enum {
+    EMPTY,
+    ACTIVE,
+    DUMMY
+} HSet_ProbeState;
+
+typedef struct {
+    void *item; // the actual object hashed
+    size_t size;
+    uint32_t hash; // cached hash
+    HSet_ProbeState status; // bucket status
+} HSet_Bucket;
+
+struct HashSet {
+    size_t capacity; // total number of buckets
+    size_t fill; // # active/dummy slots
+    size_t used; // # active slots
+    uint32_t mask; // table size - 1
+    uint32_t seed; // table hash seed
+    HashFunction hash_function; // hash function
+    HSet_Bucket *table; // array of entries
+};
+
 static inline uint32_t round_up_to_pow2(uint32_t x) {
     if (x == 0)
         return 1;
@@ -36,7 +61,7 @@ static inline size_t table_lookup(HSet_Bucket *table, uint32_t mask, void *item,
 
 HashSet *hset_resize(HashSet *);
 
-HashSet *hset_new(size_t starting_capacity, uint32_t seed, HSetHashFunction hash_function) {
+HashSet *hset_new(size_t starting_capacity, uint32_t seed, HashFunction hash_function) {
     HashSet *hset = (HashSet *)malloc(sizeof(HashSet));
     hset->capacity = (size_t)round_up_to_pow2((uint32_t)starting_capacity);
     hset->fill = 0;

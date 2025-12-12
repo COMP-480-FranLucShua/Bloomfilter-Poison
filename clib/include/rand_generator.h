@@ -1,17 +1,11 @@
 #ifndef RAND_GENERATOR_H
 #define RAND_GENERATOR_H
 
-#include "pcg/pcg_basic.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef struct
-{
-    pcg32_random_t pcg;
-    double gamma_alpha;
-    double gamma_theta;
-} RandomGenerator;
+typedef struct RandomGenerator RandomGenerator;
 
 // *** CONSTRUCTOR/DESTRUCTOR
 
@@ -19,10 +13,9 @@ typedef struct
  * Create a new random generator with a specified seed and sequence id
  * 
  * Parameters:
- * init_state - unsigned 64 bit starting seed
- * init_seq - unsigned 64 bit sequence ID
+ * seed - starting seed
  */
-RandomGenerator *rng_new(uint64_t init_state, uint64_t init_seq);
+RandomGenerator *rng_new(uint32_t seed);
 
 /**
  * Destroy a random number generator if not already destroyed
@@ -34,6 +27,8 @@ RandomGenerator *rng_new(uint64_t init_state, uint64_t init_seq);
 void *rng_destroy(RandomGenerator *rng);
 
 RandomGenerator *rng_clone(RandomGenerator *rng);
+
+void rng_set_gamma_params(RandomGenerator *rng, double alpha, double theta);
 
 // *** VALUE GENERATOR FUNCTIONS
 /**
@@ -59,11 +54,19 @@ double * rng_generate_double_array(RandomGenerator *rng, double *array, size_t l
 
 /**
  * Generate a random choice of integers in [0, range-1) without replacement
+ *
+ * This function should be used for relatively large values of len, and small values of range
  * 
  * Assumes array is already allocated with the necessary size
  */
 uint32_t * rng_generate_choice(RandomGenerator *rng, size_t range, uint32_t *array, size_t len);
 
+/**
+ * Generate an array of uint32s, without replacement.
+ *
+ * This function is O(len^2), so should only be used for small values of len
+ */
+uint32_t * rng_generate_int32_array_unique(RandomGenerator *rng, uint32_t *array, size_t len);
 
 // *** RANDOM DISTRIBUTIONS
 

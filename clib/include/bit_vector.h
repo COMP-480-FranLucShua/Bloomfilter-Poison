@@ -4,11 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-typedef struct {
-    size_t len;
-    size_t _num_bytes;
-    uint8_t _vector[]; // flexible array for bit data
-} BitVector;
+typedef struct BitVector BitVector;
 
 BitVector *bvec_new(size_t len);
 void *bvec_destroy(BitVector * bit_vec);
