@@ -82,6 +82,10 @@ uint_fast8_t bvec_get_bit(BitVector *bvec, size_t bit_index) {
     return (uint_fast8_t)get_bit_val(bvec->_vector[byte_index] & bit_mask);
 }
 
+size_t bvec_len(BitVector *bvec) {
+    return bvec->len;
+}
+
 BitVector *bvec_clone(BitVector *bvec) {
     size_t total_size = sizeof(BitVector) + bvec->_num_bytes;
     BitVector *new_bvec = (BitVector *)malloc(total_size);

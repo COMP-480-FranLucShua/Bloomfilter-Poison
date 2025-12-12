@@ -52,9 +52,9 @@ clean:
 
 test: 
 	@$(MAKE) build > /dev/null
-	@$(MAKE) $(TEST_BIN)
+	@$(MAKE) $(TEST_BIN) > /dev/null
 	@./$(TEST_BIN)
-	@rm -rf $(TEST_BUILD_DIR) $(TEST_BIN)
+	@$(MAKE) clean > /dev/null
 
 $(TEST_BIN): $(TEST_OBJS)
 	@$(CC) $(TEST_CCFLAGS) -o $@ $^ $(CCLINKFLAGS)

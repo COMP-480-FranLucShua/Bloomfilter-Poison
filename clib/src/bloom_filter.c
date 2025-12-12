@@ -1,7 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "bloom_filter.h"
-#include "rand_generator.h"
+#include "interfaces/generator.h"
+#include "bit_vector.h"
 
 typedef uint32_t (*HashFunction)(const uint8_t *val, size_t len, uint32_t seed);
 
@@ -13,14 +15,14 @@ struct BloomFilter {
     uint32_t seeds[]; // flexible array of seeds
 };
 
-BloomFilter *bfilter_new(size_t size, size_t k, RandomGenerator *rng) {
-    BloomFilter *bfilter = (BloomFilter *)malloc(sizeof(BloomFilter) + sizeof(unit32_t) * k);
+BloomFilter *bfilter_new(size_t size, size_t k, Generator *rng_interface, void *rng_instance) {
+    BloomFilter *bfilter = (BloomFilter *)malloc(sizeof(BloomFilter) + sizeof(uint32_t) * k);
 
     bfilter->filter_range = size;
     bfilter->k = k;
     bfilter->filter = bvec_new(bfilter->filter_range);
 
-    rng_generate_int32_array_unique(rng, bfilter->seeds, k);
+    rng_interface->gen_integers_unique(rng_instance, bfilter->seeds, k);
 
     return bfilter;
 }
@@ -54,7 +56,7 @@ uint_fast8_t bfilter_query(BloomFilter * bfilter, uint8_t *data, size_t data_len
 }
 
 BloomFilter *bfilter_clone(BloomFilter * bfilter) {
-    size_t total_size = sizeof(*bfilter) + sizeof(unit32_t) * k;
+    size_t total_size = sizeof(*bfilter) + sizeof(uint32_t) * bfilter->k;
     BloomFilter *bfilter_new = (BloomFilter *)malloc(total_size);
     memcpy(bfilter_new, bfilter, total_size);
     bfilter_new->filter = bvec_clone(bfilter->filter);

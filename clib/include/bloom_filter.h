@@ -1,12 +1,11 @@
 #ifndef BLOOM_FILTER_H
 #define BLOOM_FILTER_H
 #include <stddef.h>
-#include "rand_generator.h"
+#include "interfaces/generator.h"
 
 typedef struct BloomFilter BloomFilter;
 
-BloomFilter *bfilter_new(size_t size, size_t k, RandomGenerator *rng);
-BloomFilter *bfilter_new(HashFamily *hash_family);
+BloomFilter *bfilter_new(size_t size, size_t k, Generator *rng_interface, void *rng_instance);
 void *bfilter_destroy(BloomFilter *);
 
 BloomFilter *bfilter_insert(BloomFilter *, uint8_t *data, size_t data_len);

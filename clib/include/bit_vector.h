@@ -17,6 +17,8 @@ BitVector *bvec_fill(BitVector *bit_vec, uint_fast8_t bit_val);
 BitVector *bvec_set_bit(BitVector *bit_vec, size_t bit_index, uint_fast8_t bit_val);
 uint_fast8_t bvec_get_bit(BitVector *bit_vec, size_t bit_index);
 
+size_t bvec_len(BitVector *bvec);
+
 BitVector *bvec_clone(BitVector *bit_vec);
 
 void bvec_dump(BitVector *bit_vec);
