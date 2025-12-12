@@ -1,6 +1,8 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
+#include <stdint.h>
+
 typedef struct {
     uint32_t (*gen_integer)(void *self); // generate a 
     uint32_t *(*gen_integers)(void *self, uint32_t *array, size_t count);

@@ -1,4 +1,4 @@
-from c_modules import BitVector
+from c_modules import B
 
 def main():
     print("Experiment")

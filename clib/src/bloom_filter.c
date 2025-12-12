@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -11,8 +12,9 @@ size_t bf_get_filter_len(void *self);
 BitVector *bf_get_filter(void *self);
 
 const Filter bloom_filter_interface = {
+    .query = bfilter_query,
+    .insert = bfilter_insert,
 	.get_num_hf = bf_get_num_hf,
-	.get_filter_len = bf_get_filter_len,
 	.get_filter = bf_get_filter,
 };
 
@@ -48,22 +50,22 @@ void *bfilter_destroy(BloomFilter *bfilter) {
     return bfilter;
 }
 
-BloomFilter *bfilter_insert(BloomFilter * bfilter, uint8_t *data, size_t data_len) {
+void bfilter_insert(void *self, void *data, size_t data_len) {
+    BloomFilter *bfilter = (BloomFilter *)self;
     for (size_t i = 0; i < bfilter->k; i++) {
         size_t idx = bfilter->hash_function(data, data_len, bfilter->seeds[i]);
         bvec_set_bit(bfilter->filter, idx, 1);
     }
-
-    return bfilter;
 }
 
-uint_fast8_t bfilter_query(BloomFilter * bfilter, uint8_t *data, size_t data_len) {
+bool bfilter_query(void *self, void *data, size_t data_len) {
+    BloomFilter *bfilter = (BloomFilter *)self;
     uint_fast8_t result = 0;
     for (size_t i = 0; i < bfilter->k; i++) {
         size_t idx = bfilter->hash_function(data, data_len, bfilter->seeds[i]);
         result |= bvec_get_bit(bfilter->filter, idx);
     }
-    return result;
+    return (bool)result;
 }
 
 BloomFilter *bfilter_clone(BloomFilter * bfilter) {

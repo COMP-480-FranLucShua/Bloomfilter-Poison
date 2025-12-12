@@ -150,9 +150,11 @@ uint32_t * rng_generate_int32_array_unique(void *self, uint32_t *array, size_t l
         while (hset_query(set, &num, sizeof(uint32_t))) {
             num = rng_generate_int32(rng);
         }
-        hset_insert_owned(set, &num, sizeof(uint32_t));
-        array[i] = num;
+        array[i] = num; // cannot modify array[i] until set is destroyed
+        hset_insert(set, &array[i], sizeof(uint32_t));
     }
+
+    hset_destroy(set);
 
     return array;
 }

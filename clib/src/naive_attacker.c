@@ -6,9 +6,9 @@
 
 #include <stdlib.h>
 
-void naive_attacker_attack(void *na);
+void naive_attacker_attack(void *na, size_t attack_size);
 
-Attacker naive_attacker_interface = {
+const Attacker naive_attacker_interface = {
 	.attack = naive_attacker_attack,
 };
 
@@ -42,18 +42,16 @@ void naive_attacker_destroy(Naive_Attacker *self) {
 	free(self);
 }
 
-void naive_attacker_attack(void *self) {
+void naive_attacker_attack(void *self, size_t attack_size) {
 	Naive_Attacker *na = self;
 
-	char *sample = NULL;
-	size_t length = 0;
+	char *sample;
+	size_t length;
 
-	// NOTE: sample is owned by smplr_inst
-	na->smplr->sample(na->smplr_inst, sample, &length);
-
-	if (sample == NULL) {
-		return; //FIXME: Should probably error
+	for (size_t i = 0; i < attack_size; i++) {
+		// NOTE: sample is owned by smplr_inst
+		sample = na->smplr->sample(na->smplr_inst, &length);
+	
+		na->sstm->insert(na->sstm_inst, sample, length);
 	}
-
-	na->sstm->insert(na->sstm_inst, sample, length);
 }

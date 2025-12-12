@@ -21,10 +21,8 @@ void t_bvec_teardown(void *fixture) {
 
 MunitResult t_bvec_fill(const MunitParameter params[], void *fixture) {
     BitVector *bvec = (BitVector *)fixture;
-    bvec_dump(bvec);
 
     bvec_fill(bvec, 1);
-    bvec_dump(bvec);
 
     for (size_t i = 0; i < bvec_len(bvec); i++) {
         uint8_t bit = (uint8_t)bvec_get_bit(bvec, i);
@@ -32,7 +30,6 @@ MunitResult t_bvec_fill(const MunitParameter params[], void *fixture) {
     }
 
     bvec_fill(bvec, 0);
-    bvec_dump(bvec);
 
     for (size_t i = 0; i < bvec_len(bvec); i++) {
         uint8_t bit = (uint8_t)bvec_get_bit(bvec, i);
@@ -70,6 +67,42 @@ MunitResult t_bvec_get_set_bit(const MunitParameter params[], void *fixture) {
     return MUNIT_OK;
 }
 
+MunitResult t_bvec_sum(const MunitParameter params[], void *fixture) {
+    BitVector *bvec = (BitVector *)fixture;
+
+    munit_assert_uint32(bvec_sum(bvec), ==, 0);
+
+    bvec_set_bit(bvec, 50, 1);
+
+    munit_assert_uint32(bvec_sum(bvec), ==, 1);
+
+    for (size_t i = 0; i < 25; i++) {
+        bvec_set_bit(bvec, i, 1);
+        munit_assert_uint32(bvec_sum(bvec), ==, 2+i);
+    }
+
+    for (size_t i = 24; i < (size_t)-1; i--) {
+        bvec_set_bit(bvec, i, 0);
+        munit_assert_uint32(bvec_sum(bvec), ==, 1+i);
+    }
+
+    bvec_fill(bvec, 1);
+
+    munit_assert_uint32(bvec_sum(bvec), ==, 64);
+    bvec_fill(bvec, 0);
+    munit_assert_uint32(bvec_sum(bvec), ==, 0);
+
+    return MUNIT_OK;
+}
+
+MunitResult t_bvec_len(const MunitParameter params[], void *fixture) {
+    BitVector *bvec = (BitVector *)fixture;
+
+    munit_assert_uint32(bvec_len(bvec), ==, 64);
+
+    return MUNIT_OK;
+}
+
 MunitTest t_bvec[] = {
     {
         "/bvec-fill",
@@ -82,6 +115,22 @@ MunitTest t_bvec[] = {
     {
         "/bvec-get-set-bit",
         t_bvec_get_set_bit,
+        t_bvec_setup,
+        t_bvec_teardown,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/bvec-len",
+        t_bvec_len,
+        t_bvec_setup,
+        t_bvec_teardown,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/bvec-sum",
+        t_bvec_sum,
         t_bvec_setup,
         t_bvec_teardown,
         MUNIT_TEST_OPTION_NONE,

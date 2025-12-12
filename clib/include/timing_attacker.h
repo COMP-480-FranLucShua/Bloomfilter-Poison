@@ -18,14 +18,14 @@ typedef struct TimingAttacker TimingAttacker;
  * @param fltr_inst     Instance implementing the Filter interface
  * @param smplr         Pointer to a Sampler interface vtable
  * @param smplr_inst    Instance implementing the Sampler interface
- * @param time_threshold Threshold (in seconds) for timing attack classification
+ * @param training_proportion Proportion of attack size to use as training for KMeans Clustering
  *
  * @return Pointer to a newly allocated TimingAttacker, or NULL on failure.
  */
 TimingAttacker* timing_attacker_create(
     const System *sstm, void *sstm_inst,
     const Sampler *smplr, void *smplr_inst,
-    double time_threshold
+    double training_proportion
 );
 
 /**
@@ -38,7 +38,7 @@ void timing_attacker_destroy(TimingAttacker *ta);
  * Direct access attack method.
  * Users may call this directly if they know the concrete type.
  */
-void timing_attacker_attack(void *ta);
+void timing_attacker_attack(void *ta, size_t attack_size);
 
 #ifdef __cplusplus
 }
