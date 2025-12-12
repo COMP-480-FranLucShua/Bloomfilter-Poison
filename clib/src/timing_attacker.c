@@ -1,6 +1,7 @@
 #include "interfaces/attacker.h"
 #include "interfaces/system.h"
 #include "interfaces/sampler.h"
+#include "timing_attacker.h"
 
 #include <string.h>
 #include <sys/time.h>
@@ -12,7 +13,7 @@ const Attacker timing_attacker_interface = {
 	.attack = timing_attacker_attack,
 };
 
-typedef struct {
+struct TimingAttacker {
 	const System *sstm;
 	void *sstm_inst;
 
@@ -20,7 +21,7 @@ typedef struct {
 	void *smplr_inst;
 
 	double time_threshold;
-} TimingAttacker;
+};
 
 TimingAttacker* timing_attacker_create(
 	const System *sstm, void *sstm_inst,
@@ -50,12 +51,12 @@ void timing_attacker_attack(void *self) {
 
 	for (;;) {
 		double elapsed_seconds;
-		void *sample;
-		size_t length;
+
+		char *sample = NULL;
+		size_t length = 0;
 
 		// NOTE: sample is owned by smplr_inst
-		sample = ta->smplr->sample(ta->smplr_inst);
-		length = strlen(sample);
+		ta->smplr->sample(ta->smplr_inst, sample, &length);
 
 		if (sample == NULL) {
 			break; //FIXME: Should probably error
