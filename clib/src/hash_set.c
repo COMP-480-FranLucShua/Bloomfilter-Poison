@@ -97,7 +97,7 @@ HashSet *hset_insert(HashSet *hset, void *item, size_t size) {
     return hset;
 }
 
-bool hset_lookup(HashSet *hset, void *item, size_t size) {
+bool hset_query(HashSet *hset, void *item, size_t size) {
     uint32_t hash = hset->hash_function((const uint8_t *)item, size, hset->seed);
 
     bool found = false;

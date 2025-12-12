@@ -35,7 +35,7 @@ void * hset_destroy(HashSet *);
 HashSet *hset_clone(HashSet *);
 
 HashSet *hset_insert(HashSet *, void *item, size_t size);
-bool hset_lookup(HashSet *, void *item, size_t size);
+bool hset_query(HashSet *, void *item, size_t size);
 HashSet *hset_delete(HashSet *, void *item, size_t size);
 
 // *** ITERATOR

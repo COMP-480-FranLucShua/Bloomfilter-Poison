@@ -23,10 +23,10 @@ int main(int , char **) {
     hset_print_int(hset);
 
     printf("%d, %d, %d, %d\n", 
-        hset_lookup(hset, &item, 4),
-        hset_lookup(hset, &item2, 4),
-        hset_lookup(hset, &item3, 4),
-        hset_lookup(hset, &item4, 4)
+        hset_query(hset, &item, 4),
+        hset_query(hset, &item2, 4),
+        hset_query(hset, &item3, 4),
+        hset_query(hset, &item4, 4)
     );
 
     hset_destroy(hset);

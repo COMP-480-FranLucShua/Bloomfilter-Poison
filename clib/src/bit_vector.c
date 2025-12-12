@@ -1,5 +1,6 @@
 #include "bit_vector.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -72,7 +73,7 @@ uint_fast8_t bvec_get_bit(BitVector *bvec, size_t bit_index) {
 
     uint8_t bit_mask = 1 << bit_in_byte;
 
-    return (uint_fast8_t)get_bit_val(bvec->_vector[byte_index] | bit_mask);
+    return (uint_fast8_t)get_bit_val(bvec->_vector[byte_index] & bit_mask);
 }
 
 BitVector *bvec_clone(BitVector *bvec) {
@@ -82,4 +83,12 @@ BitVector *bvec_clone(BitVector *bvec) {
     memcpy(new_bvec, bvec, total_size);
 
     return new_bvec;
+}
+
+void bvec_dump(BitVector *bvec) {
+    fprintf(stderr, "[");
+    for (size_t i = 0; i < bvec->len; i++) {
+        fprintf(stderr, "%u", (uint32_t)bvec_get_bit(bvec, i));
+    }
+    fprintf(stderr, "]\n");
 }
