@@ -5,10 +5,8 @@
 extern "C" {
 #endif
 
-// Forward declarations so we don't force users to include the full interfaces
-typedef struct Filter Filter;
-typedef struct Sampler Sampler;
-typedef struct Attacker Attacker;
+#include "interfaces/system.h"
+#include "interfaces/sampler.h"
 
 // Opaque struct -- implementation is hidden in the .c file
 typedef struct TimingAttacker TimingAttacker;
@@ -25,7 +23,7 @@ typedef struct TimingAttacker TimingAttacker;
  * @return Pointer to a newly allocated TimingAttacker, or NULL on failure.
  */
 TimingAttacker* timing_attacker_create(
-    const Filter *fltr, void *fltr_inst,
+    const System *sstm, void *sstm_inst,
     const Sampler *smplr, void *smplr_inst,
     double time_threshold
 );

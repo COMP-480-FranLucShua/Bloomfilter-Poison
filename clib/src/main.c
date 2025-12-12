@@ -2,7 +2,10 @@
 #include "hash_set.h"
 #include "murmur_hash.h"
 
-int main(int , char **) {
+int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+
     HashSet *hset = hset_new(1, 0, murmur3_32);
     hset_dump_table(hset);
 
