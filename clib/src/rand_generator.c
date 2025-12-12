@@ -3,13 +3,34 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+#include "pcg/pcg_basic.h"
 #include "rand_generator.h"
+#include "murmur_hash.h"
+#include "hash_set.h"
+
+const Generator rand_generator_interface = {
+    .gen_integer = rng_generate_int32,
+    .gen_integers = rng_generate_int32_array,
+    .gen_integers_unique = rng_generate_int32_array_unique,
+    .gen_double = rng_generate_double,
+    .gen_distribution = rng_generate_gamma,
+    .gen_choice = rng_generate_choice,
+};
+
+struct RandomGenerator {
+    pcg32_random_t pcg;
+    double gamma_alpha;
+    double gamma_theta;
+};
 
 // *** CONSTRUCTOR/DESTRUCTOR
-RandomGenerator *rng_new(uint64_t init_state, uint64_t init_seq) {
+RandomGenerator *rng_new(uint32_t seed) {
     RandomGenerator *rng = (RandomGenerator *)malloc(sizeof(RandomGenerator));
 
-    pcg32_srandom_r(&(rng->pcg), init_state, init_seq);
+    const uint64_t default_state[] = PCG32_INITIALIZER;
+
+    pcg32_srandom_r(&(rng->pcg), default_state[0], seed);
 
     rng->gamma_alpha = 1.0;
     rng->gamma_theta = 1.0;
@@ -17,7 +38,9 @@ RandomGenerator *rng_new(uint64_t init_state, uint64_t init_seq) {
     return rng;
 }
 
-void *rng_destroy(RandomGenerator *rng) {
+
+void *rng_destroy(void *self) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     if (rng != NULL) {
         free(rng);
         rng = NULL;
@@ -25,7 +48,8 @@ void *rng_destroy(RandomGenerator *rng) {
     return (void *)rng;
 }
 
-RandomGenerator *rng_clone(RandomGenerator *rng) {
+RandomGenerator *rng_clone(void *self) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     RandomGenerator *rng_new = (RandomGenerator *)malloc(sizeof(RandomGenerator));
 
     rng_new->pcg.state = rng->pcg.state;
@@ -34,17 +58,27 @@ RandomGenerator *rng_clone(RandomGenerator *rng) {
     return rng_new;
 }
 
+// *** SETTER
+void rng_set_gamma_params(void *self, double alpha, double theta) {
+    RandomGenerator *rng = (RandomGenerator *)self;
+    rng->gamma_alpha = alpha;
+    rng->gamma_theta = theta;
+}
+
 // *** VALUE GENERATOR FUNCTIONS
 
-uint32_t rng_generate_int32(RandomGenerator *rng) {
+uint32_t rng_generate_int32(void *self) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     return pcg32_random_r(&(rng->pcg));
 }
 
-uint32_t rng_generate_int32_bounded(RandomGenerator *rng, size_t bound) {
+uint32_t rng_generate_int32_bounded(void *self, size_t bound) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     return pcg32_boundedrand_r(&(rng->pcg), bound);
 }
 
-double rng_generate_double(RandomGenerator *rng) {
+double rng_generate_double(void *self) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     uint64_t high = rng_generate_int32(rng) >> 5; // higher 27 bits of mantissa;
     uint64_t low = rng_generate_int32(rng) >> 6; // lower 26 bits of mantissa;
 
@@ -54,19 +88,22 @@ double rng_generate_double(RandomGenerator *rng) {
 }
 
 
-uint32_t * rng_generate_int32_array(RandomGenerator *rng, uint32_t *array, size_t len) {
+uint32_t * rng_generate_int32_array(void *self, uint32_t *array, size_t len) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     for (size_t i = 0; i < len; i++) {
         array[i] = rng_generate_int32(rng);
     }
     return array;
 }
-uint32_t * rng_generate_int32_bounded_array(RandomGenerator *rng, size_t bound, uint32_t *array, size_t len) {
+uint32_t * rng_generate_int32_bounded_array(void *self, size_t bound, uint32_t *array, size_t len) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     for (size_t i = 0; i < len; i++) {
         array[i] = rng_generate_int32_bounded(rng, bound);
     }
     return array;
 }
-double * rng_generate_double_array(RandomGenerator *rng, double *array, size_t len) {
+double * rng_generate_double_array(void *self, double *array, size_t len) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     for (size_t i = 0; i < len; i++) {
         array[i] = rng_generate_double(rng);
     }
@@ -75,7 +112,8 @@ double * rng_generate_double_array(RandomGenerator *rng, double *array, size_t l
 
 // *** RANDOM SELECTION
 
-uint32_t * rng_generate_choice(RandomGenerator *rng, size_t range, uint32_t *array, size_t len) {
+uint32_t * rng_generate_choice(void *self, uint32_t *array, size_t range, size_t len) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     if (range < len) {
         range = len;
     }
@@ -103,16 +141,34 @@ uint32_t * rng_generate_choice(RandomGenerator *rng, size_t range, uint32_t *arr
     return array;
 }
 
+uint32_t * rng_generate_int32_array_unique(void *self, uint32_t *array, size_t len) {
+    RandomGenerator *rng = (RandomGenerator *)self;
+    HashSet *set = hset_new(256, 0xDEADBEEF, murmur3_32);
+
+    for (size_t i = 0; i < len; i++) {
+        uint32_t num = rng_generate_int32(rng);
+        while (hset_query(set, &num, sizeof(uint32_t))) {
+            num = rng_generate_int32(rng);
+        }
+        hset_insert_owned(set, &num, sizeof(uint32_t));
+        array[i] = num;
+    }
+
+    return array;
+}
+
 // *** RANDOM DISTRIBUTIONS
 
-double generate_standard_normal(RandomGenerator *rng) {
+double generate_standard_normal(void *self) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     double u1 = rng_generate_double(rng);
     double u2 = rng_generate_double(rng);
 
     return sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
 }
 
-double gamma_mt(RandomGenerator *rng, double alpha) {
+double gamma_mt(void *self, double alpha) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     double d = alpha - 1.0/3.0;
     double c = 1.0 / sqrt(9.0 * d);
 
@@ -133,17 +189,20 @@ double gamma_mt(RandomGenerator *rng, double alpha) {
     }
 }
 
-double gamma_mt_small(RandomGenerator *rng, double alpha)
+double gamma_mt_small(void *self, double alpha)
 {
+    RandomGenerator *rng = (RandomGenerator *)self;
     double u = rng_generate_double(rng);
     return gamma_mt(rng, alpha + 1.0) * pow(u, 1.0 / alpha);
 }
 
-double rng_generate_gamma(RandomGenerator *rng) {
+double rng_generate_gamma(void *self) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     return rng_generate_gamma_params(rng, rng->gamma_alpha, rng->gamma_theta);
 }
 
-double rng_generate_gamma_params(RandomGenerator *rng, double alpha, double theta) {
+double rng_generate_gamma_params(void *self, double alpha, double theta) {
+    RandomGenerator *rng = (RandomGenerator *)self;
     double g = (alpha < 1.0)
         ? gamma_mt_small(rng, alpha)
         : gamma_mt(rng, alpha);

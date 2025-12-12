@@ -15,7 +15,7 @@ TEST_SRC_DIR = $(TEST_DIR)/test_src
 TEST_BUILD_DIR = $(TEST_DIR)/test_build
 TEST_BIN = $(TEST_DIR)/test
 
-BIN := main
+BIN := scripts/c_modules/clib.so
 
 # Source files
 SRCS := $(wildcard $(SRC_DIR)/**/*.c) $(wildcard $(SRC_DIR)/*.c)
@@ -39,12 +39,12 @@ build: $(BIN)
 
 # Link object files to get final executable
 $(BIN): $(OBJS)
-	$(CC) $(CCFLAGS) -o $@ $^ $(CCLINKFLAGS)
+	$(CC) -shared $(CCFLAGS) -o $@ $^ $(CCLINKFLAGS)
 
 # Compile each source file into an object file
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CCFLAGS) -c $< -o $@
+	$(CC) $(CCFLAGS) -c -fPIC $< -o $@
 
 clean:
 	rm -rf $(BUILD_DIR) $(BIN)
@@ -52,9 +52,9 @@ clean:
 
 test: 
 	@$(MAKE) build > /dev/null
-	@$(MAKE) $(TEST_BIN)
+	@$(MAKE) $(TEST_BIN) > /dev/null
 	@./$(TEST_BIN)
-	@rm -rf $(TEST_BUILD_DIR) $(TEST_BIN)
+	@$(MAKE) clean > /dev/null
 
 $(TEST_BIN): $(TEST_OBJS)
 	@$(CC) $(TEST_CCFLAGS) -o $@ $^ $(CCLINKFLAGS)

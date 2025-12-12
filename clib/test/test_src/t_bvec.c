@@ -4,6 +4,7 @@
 #include "t_bvec.h"
 #include "bit_vector.h"
 #include "rand_generator.h"
+#include "interfaces/generator.h"
 
 void *t_bvec_setup(const MunitParameter params[], void *user_data) {
     BitVector *bvec;
@@ -25,7 +26,7 @@ MunitResult t_bvec_fill(const MunitParameter params[], void *fixture) {
     bvec_fill(bvec, 1);
     bvec_dump(bvec);
 
-    for (size_t i = 0; i < bvec->len; i++) {
+    for (size_t i = 0; i < bvec_len(bvec); i++) {
         uint8_t bit = (uint8_t)bvec_get_bit(bvec, i);
         munit_assert_uint8(bit, ==, 1);
     }
@@ -33,7 +34,7 @@ MunitResult t_bvec_fill(const MunitParameter params[], void *fixture) {
     bvec_fill(bvec, 0);
     bvec_dump(bvec);
 
-    for (size_t i = 0; i < bvec->len; i++) {
+    for (size_t i = 0; i < bvec_len(bvec); i++) {
         uint8_t bit = (uint8_t)bvec_get_bit(bvec, i);
         munit_assert_uint8(bit, ==, 0);
     }
@@ -44,13 +45,15 @@ MunitResult t_bvec_fill(const MunitParameter params[], void *fixture) {
 MunitResult t_bvec_get_set_bit(const MunitParameter params[], void *fixture) {
     BitVector *bvec = (BitVector *)fixture;
 
-    RandomGenerator *rng = rng_new(123456ULL, (uint64_t)time(NULL));
+    RandomGenerator *rng = rng_new((uint32_t)time(NULL));
 
-    uint32_t *bit_index_sequence = (uint32_t *)malloc(bvec->len * sizeof(uint32_t));
+    uint32_t *bit_index_sequence = (uint32_t *)malloc(bvec_len(bvec) * sizeof(uint32_t));
 
-    rng_generate_choice(rng, bvec->len, bit_index_sequence, bvec->len);
+    rng_generate_choice(rng, bit_index_sequence, bvec_len(bvec), bvec_len(bvec));
 
-    for (uint32_t i = 0; i < bvec->len; i++) {
+    rng_destroy(rng);
+
+    for (uint32_t i = 0; i < bvec_len(bvec); i++) {
         size_t bit_index = (size_t)bit_index_sequence[i];
 
         for (uint_fast8_t b = 0; b < 12; b++) {

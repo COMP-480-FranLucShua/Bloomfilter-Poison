@@ -3,9 +3,11 @@
 
 #include <stdbool.h>
 #include "interfaces/system.h"
+#include "rand_generator.h"
 #include "hash_set.h"
 #include "bloom_filter.h"
-#include "rand_generator.h"
+
+typedef struct SystemEmulator SystemEmulator;
 
 void sys_insert(void *, void *data, size_t len);
 /**
@@ -18,20 +20,9 @@ const System system_emulator_interface = {
     .insert = sys_insert,
 };
 
-typedef struct {
-    HashSet *set;
-    BloomFilter *bfilter;
-    RandomGenerator *rng;
-    double system_delay;
-} SystemEmulator;
 
-
-/**
- * Ownership of set, bfilter, and rng are passed to this object
- */
 SystemEmulator *sys_new(HashSet *set, BloomFilter *bfilter, RandomGenerator *rng, double delay);
 void *sys_destroy(SystemEmulator *sys);
-SystemEmulator *sys_clone(SystemEmulator *sys);
 
 SystemEmulator *sys_insert_array(SystemEmulator *, void **data_array, size_t array_size, size_t data_len);
 

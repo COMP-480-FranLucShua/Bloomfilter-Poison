@@ -4,6 +4,32 @@
 #include <string.h>
 #include <stdio.h>
 
+typedef uint32_t (*HashFunction)(const uint8_t *val, size_t len, uint32_t seed);
+
+typedef enum {
+    EMPTY,
+    ACTIVE,
+    DUMMY
+} HSet_ProbeState;
+
+typedef struct {
+    void *item; // the actual object hashed
+    size_t size;
+    uint32_t hash; // cached hash
+    bool owned;
+    HSet_ProbeState status; // bucket status
+} HSet_Bucket;
+
+struct HashSet {
+    size_t capacity; // total number of buckets
+    size_t fill; // # active/dummy slots
+    size_t used; // # active slots
+    uint32_t mask; // table size - 1
+    uint32_t seed; // table hash seed
+    HashFunction hash_function; // hash function
+    HSet_Bucket *table; // array of entries
+};
+
 static inline uint32_t round_up_to_pow2(uint32_t x) {
     if (x == 0)
         return 1;
@@ -31,12 +57,13 @@ static inline size_t probe(size_t i, uint32_t mask, uint32_t *perturb) {
     return i;
 }
 
-static inline size_t table_insert(HSet_Bucket *table, uint32_t mask, void *item, size_t size, uint32_t hash, bool *found);
+static inline size_t table_insert(HSet_Bucket *table, uint32_t mask, void *item, size_t size, uint32_t hash, bool owned, bool *found);
 static inline size_t table_lookup(HSet_Bucket *table, uint32_t mask, void *item, size_t size, uint32_t hash, bool *found);
+static inline void table_free(HSet_Bucket *table, size_t capacity);
 
 HashSet *hset_resize(HashSet *);
 
-HashSet *hset_new(size_t starting_capacity, uint32_t seed, HSetHashFunction hash_function) {
+HashSet *hset_new(size_t starting_capacity, uint32_t seed, HashFunction hash_function) {
     HashSet *hset = (HashSet *)malloc(sizeof(HashSet));
     hset->capacity = (size_t)round_up_to_pow2((uint32_t)starting_capacity);
     hset->fill = 0;
@@ -51,7 +78,7 @@ HashSet *hset_new(size_t starting_capacity, uint32_t seed, HSetHashFunction hash
 void *hset_destroy(HashSet *hset) {
     if (hset != NULL) {
         if (hset->table != NULL) {
-            free(hset->table);
+            table_free(hset->table, hset->capacity);
             hset->table = NULL;
         }
         free(hset);
@@ -71,12 +98,12 @@ HashSet *hset_clone(HashSet *hset) {
     return new_hash_set;
 }
 
-HashSet *hset_insert(HashSet *hset, void *item, size_t size) {
+static inline HashSet *hset_insert_helper(HashSet *hset, void *item, size_t size, bool owned) {
     uint32_t hash = hset->hash_function((const uint8_t *)item, size, hset->seed);
 
     bool found = false;
 
-    table_insert(hset->table, hset->mask, item, size, hash, &found);
+    table_insert(hset->table, hset->mask, item, size, hash, owned, &found);
     
     if (found) {
         // already contained
@@ -95,6 +122,17 @@ HashSet *hset_insert(HashSet *hset, void *item, size_t size) {
     }
 
     return hset;
+}
+
+HashSet *hset_insert(HashSet *hset, void *item, size_t size) {
+    return hset_insert_helper(hset, item, size, false);
+}
+
+/**
+ * Insert hash-set owned item (use for data that may be freed outside of hashset)
+ */
+HashSet *hset_insert_owned(HashSet *hset, void *item, size_t size) {
+    return hset_insert_helper(hset, item, size, true);
 }
 
 bool hset_query(HashSet *hset, void *item, size_t size) {
@@ -118,9 +156,15 @@ HashSet *hset_delete(HashSet *hset, void *item, size_t size) {
         // found, time to delete
         HSet_Bucket *bucket = &hset->table[idx];
 
+        if (bucket->owned) {
+            // free data
+            free(bucket->item);
+        }
+
         bucket->item = NULL;
         bucket->size = 0;
         bucket->hash = 0;
+        bucket->owned = false;
         bucket->status = DUMMY;
 
         hset->used --;
@@ -181,7 +225,7 @@ void hset_dump_table(HashSet *hset) {
     printf(" ]\n");
 }
 
-static inline size_t table_insert(HSet_Bucket *table, uint32_t mask, void *item, size_t size, uint32_t hash, bool *found) {
+static inline size_t table_insert(HSet_Bucket *table, uint32_t mask, void *item, size_t size, uint32_t hash, bool owned, bool *found) {
     size_t idx = table_lookup(table, mask, item, size, hash, found);
 
     if (*found) {
@@ -190,12 +234,21 @@ static inline size_t table_insert(HSet_Bucket *table, uint32_t mask, void *item,
 
     // ready to insert
 
+    if (owned) {
+        // reallocate item
+        void *new_item = malloc(size);
+        memcpy(new_item, item, size);
+
+        item = new_item;
+    }
+
     HSet_Bucket *bucket = &table[idx];
 
     // now insert into bucket
     bucket->item = item;
     bucket->size = size;
     bucket->hash = hash;
+    bucket->owned = owned;
     bucket->status = ACTIVE;
 
     return idx;
@@ -225,6 +278,17 @@ static inline size_t table_lookup(HSet_Bucket *table, uint32_t mask, void *item,
     return idx;
 }
 
+static inline void table_free(HSet_Bucket *table, size_t capacity) {
+    HSet_Bucket *bucket;
+    for (size_t i = 0; i < capacity; i++) {
+        bucket = &table[i];
+        if (bucket->status == ACTIVE && bucket->owned) {
+            free(bucket->item);
+        }
+    }
+
+    free(table);
+}
 
 HashSet *hset_resize(HashSet * hset) {
     size_t old_capacity = hset->capacity;
@@ -247,13 +311,13 @@ HashSet *hset_resize(HashSet * hset) {
         if (bucket->status == ACTIVE) {
             bool found = false;
             // insert into new table
-            table_insert(hset->table, hset->mask, bucket->item, bucket->size, bucket->hash, &found);
+            table_insert(hset->table, hset->mask, bucket->item, bucket->size, bucket->hash, bucket->owned, &found);
             hset->fill ++;
             hset->used ++;
         }
     }
 
     // delete old table
-    free(old_table);
+    table_free(old_table, old_capacity);
     return hset;
 }

@@ -1,20 +1,11 @@
 #ifndef BLOOM_FILTER_H
 #define BLOOM_FILTER_H
+#include <stddef.h>
+#include "interfaces/generator.h"
 
+typedef struct BloomFilter BloomFilter;
 
-#include "bit_vector.h"
-#include "hash_family.h"
-
-typedef struct
-{
-    size_t filter_range;
-    size_t k;
-    HashFamily *hash_family;
-    BitVector *filter;
-
-} BloomFilter;
-
-BloomFilter *bfilter_new(HashFamily *hash_family);
+BloomFilter *bfilter_new(size_t size, size_t k, Generator *rng_interface, void *rng_instance);
 void *bfilter_destroy(BloomFilter *);
 
 BloomFilter *bfilter_insert(BloomFilter *, uint8_t *data, size_t data_len);
