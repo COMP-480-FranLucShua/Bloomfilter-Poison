@@ -1,6 +1,17 @@
 #include <stdlib.h>
 #include "system.h"
 
+/**
+ * SystemEmulator does not own set, bfilter, or rng
+ * Creator of SystemEmulator must free set, bfilter, and rng after use
+ */
+struct SystemEmulator {
+    HashSet *set;
+    BloomFilter *bfilter;
+    RandomGenerator *rng;
+    double system_delay;
+};
+
 SystemEmulator *sys_new(HashSet *set, BloomFilter *bfilter, RandomGenerator *rng, double delay) {
     SystemEmulator *sys = (SystemEmulator *)malloc(sizeof(SystemEmulator));
 
@@ -14,24 +25,10 @@ SystemEmulator *sys_new(HashSet *set, BloomFilter *bfilter, RandomGenerator *rng
 
 void *sys_destroy(SystemEmulator *sys) {
     if (sys != NULL) {
-        sys->set = hset_destroy(sys->set);
-        sys->bfilter = bfilter_destroy(sys->bfilter);
-        sys->rng = rng_destroy(sys->rng);
-
         free(sys);
         sys = NULL;
     }
     return sys;
-}
-
-SystemEmulator *sys_clone(SystemEmulator *sys) {
-    SystemEmulator *new_sys = (SystemEmulator *) malloc(sizeof(SystemEmulator));
-    new_sys->set = hset_clone(sys->set);
-    new_sys->bfilter = bfilter_clone(sys->bfilter);
-    new_sys->rng = rng_clone(sys->rng);
-    new_sys->system_delay = sys->system_delay;
-
-    return new_sys;
 }
 
 void sys_insert(void *self, void *data, size_t len) {

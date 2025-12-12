@@ -5,6 +5,12 @@
 #include <stdint.h>
 #include <string.h>
 
+struct BitVector {
+    size_t len;
+    size_t _num_bytes;
+    uint8_t _vector[]; // flexible array for bit data
+};
+
 BitVector *bvec_new(size_t len) {
     size_t num_bytes = len/8;
     if (len % 8 != 0) {
@@ -74,6 +80,10 @@ uint_fast8_t bvec_get_bit(BitVector *bvec, size_t bit_index) {
     uint8_t bit_mask = 1 << bit_in_byte;
 
     return (uint_fast8_t)get_bit_val(bvec->_vector[byte_index] & bit_mask);
+}
+
+size_t bvec_len(BitVector *bvec) {
+    return bvec->len;
 }
 
 BitVector *bvec_clone(BitVector *bvec) {
