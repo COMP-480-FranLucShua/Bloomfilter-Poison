@@ -8,6 +8,7 @@
 struct BitVector {
     size_t len;
     size_t _num_bytes;
+    size_t sum;
     uint8_t _vector[]; // flexible array for bit data
 };
 
@@ -17,8 +18,9 @@ BitVector *bvec_new(size_t len) {
         num_bytes ++;
     }
 
-    BitVector *bvec = (BitVector *)malloc(sizeof(BitVector) + num_bytes);
+    BitVector *bvec = (BitVector *)calloc(num_bytes, sizeof(BitVector));
 
+    bvec->sum = 0;
     bvec->len = len;
     bvec->_num_bytes = num_bytes;
 
@@ -47,6 +49,8 @@ BitVector *bvec_fill(BitVector *bvec, uint_fast8_t bit_val) {
         bvec->_vector[i] = fill_val;
     }
 
+    bvec->sum = bvec->len * bit_val;
+
     return bvec;
 }
 
@@ -60,6 +64,11 @@ BitVector *bvec_set_bit(BitVector *bvec, size_t bit_index, uint_fast8_t bit_val)
     uint8_t bit_mask = 1 << bit_in_byte;
 
     uint8_t bit_val_byte = get_bit_val(bit_val);
+
+    // increment/decrement sum
+    uint8_t old_bit_val = (uint8_t)bvec_get_bit(bvec, bit_index);
+
+    bvec->sum += bit_val_byte - old_bit_val;
 
     // clear bit
     bvec->_vector[byte_index] &= ~bit_mask;
@@ -84,6 +93,9 @@ uint_fast8_t bvec_get_bit(BitVector *bvec, size_t bit_index) {
 
 size_t bvec_len(BitVector *bvec) {
     return bvec->len;
+}
+size_t bvec_sum(BitVector *bvec) {
+    return bvec->sum;
 }
 
 BitVector *bvec_clone(BitVector *bvec) {

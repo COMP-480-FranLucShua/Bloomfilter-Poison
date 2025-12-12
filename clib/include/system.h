@@ -3,11 +3,13 @@
 
 #include <stdbool.h>
 #include "interfaces/system.h"
-#include "rand_generator.h"
-#include "hash_set.h"
-#include "bloom_filter.h"
+#include "interfaces/generator.h"
+#include "interfaces/filter.h"
+#include "interfaces/set.h"
 
 typedef struct SystemEmulator SystemEmulator;
+
+extern const System system_emulator_interface;
 
 void sys_insert(void *, void *data, size_t len);
 /**
@@ -15,18 +17,14 @@ void sys_insert(void *, void *data, size_t len);
  */
 bool sys_query(void *, void *data, size_t len, double *delay, bool *fp);
 
-const System system_emulator_interface = {
-    .query = sys_query,
-    .insert = sys_insert,
-};
 
-
-SystemEmulator *sys_new(HashSet *set, BloomFilter *bfilter, RandomGenerator *rng, double delay);
+SystemEmulator *sys_new(Set *set, void *set_inst,
+                        Filter *filter, void *filter_inst,
+                        Generator *rng, void *rng_inst,
+                        double delay);
 void *sys_destroy(SystemEmulator *sys);
 
-SystemEmulator *sys_insert_array(SystemEmulator *, void **data_array, size_t array_size, size_t data_len);
-
-
+void sys_insert_array(void *, void **data_array, size_t *data_lens, size_t array_size);
 
 /**
  * Caller is in charge of passing an allocated query result array
@@ -34,6 +32,6 @@ SystemEmulator *sys_insert_array(SystemEmulator *, void **data_array, size_t arr
  * if actual query results are not required, set corresponding results = NULL
  * if false positives are not required, set fps=NULL
  */
-bool *sys_query_array(SystemEmulator *, void **data_array, size_t array_size, size_t data_len, bool *queries, double *delays, size_t *fp_count);
+void sys_query_array(void *, void **data_array, size_t *data_lens, size_t array_size, bool *queries, double *delays, size_t *fp_count);
 
 #endif

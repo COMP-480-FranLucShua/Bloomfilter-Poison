@@ -1,4 +1,5 @@
 from c_types import c_void_p
+
 class _C_Object:
     """
     C Object superclass
@@ -12,7 +13,7 @@ class _C_Object:
     def close(self):
         if not self._closed:
             if self._destructor(self._c_obj) != None:
-                print(f"Failed to destroy {self._name}")
+                raise RuntimeError(f"Failed to destroy {self._name}")
             self._c_obj = None
             self._closed = True
 
