@@ -8,6 +8,10 @@
 
 void timing_attacker_attack(void *ta);
 
+const Attacker timing_attacker_interface = {
+	.attack = timing_attacker_attack,
+};
+
 typedef struct {
 	const System *sstm;
 	void *sstm_inst;
@@ -17,10 +21,6 @@ typedef struct {
 
 	double time_threshold;
 } TimingAttacker;
-
-const Attacker timing_attacker_interface = {
-	.attack = timing_attacker_attack,
-};
 
 TimingAttacker* timing_attacker_create(
 	const System *sstm, void *sstm_inst,
