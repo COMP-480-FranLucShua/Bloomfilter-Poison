@@ -23,4 +23,6 @@ uint_fast8_t bvec_get_bit(BitVector *bit_vec, size_t bit_index);
 
 BitVector *bvec_clone(BitVector *bit_vec);
 
+void bvec_dump(BitVector *bit_vec);
+
 #endif
