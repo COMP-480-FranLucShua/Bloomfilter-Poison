@@ -77,7 +77,7 @@ HashSet *hset_new(size_t starting_capacity, uint32_t seed, HashFunction hash_fun
     hset->mask = (uint32_t) hset->capacity-1;
     hset->seed = seed;
     hset->hash_function = hash_function;
-    hset->table = (HSet_Bucket *)malloc(hset->capacity * sizeof(HSet_Bucket));
+    hset->table = (HSet_Bucket *)calloc(hset->capacity, sizeof(HSet_Bucket));
 
     return hset;
 }
@@ -88,6 +88,7 @@ void *hset_destroy(void *self) {
             free(hset->table);
             hset->table = NULL;
         }
+
         free(hset);
         hset = NULL;
     }
@@ -99,7 +100,7 @@ HashSet *hset_clone(void *self) {
     HashSet *new_hash_set = (HashSet *)malloc(sizeof(HashSet));
     memcpy(new_hash_set, hset, offsetof(HashSet, table));
 
-    new_hash_set->table = (HSet_Bucket *)malloc(hset->capacity * sizeof(HSet_Bucket));
+    new_hash_set->table = (HSet_Bucket *)calloc(hset->capacity, sizeof(HSet_Bucket));
 
     memcpy(new_hash_set->table, hset->table, hset->capacity * sizeof(HSet_Bucket));
 
@@ -275,7 +276,7 @@ HashSet *hset_resize(void *self) {
     size_t new_capacity = (size_t)round_up_to_pow2((uint32_t) old_capacity+1);
     size_t new_mask = new_capacity-1;
     HSet_Bucket *old_table = hset->table;
-    HSet_Bucket *new_table = (HSet_Bucket *)malloc(new_capacity * sizeof(HSet_Bucket));
+    HSet_Bucket *new_table = (HSet_Bucket *)calloc(new_capacity, sizeof(HSet_Bucket));
 
     // set hset to new values
     hset->capacity = new_capacity;
