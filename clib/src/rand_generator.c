@@ -26,7 +26,7 @@ struct RandomGenerator {
 
 // *** CONSTRUCTOR/DESTRUCTOR
 RandomGenerator *rng_new(uint32_t seed) {
-    RandomGenerator *rng = (RandomGenerator *)malloc(sizeof(RandomGenerator));
+    RandomGenerator *rng = (RandomGenerator *)calloc(1, sizeof(RandomGenerator));
 
     const uint64_t default_state[] = PCG32_INITIALIZER;
 
@@ -54,6 +54,8 @@ RandomGenerator *rng_clone(void *self) {
 
     rng_new->pcg.state = rng->pcg.state;
     rng_new->pcg.inc = rng->pcg.inc;
+    rng_new->gamma_alpha = rng->gamma_alpha;
+    rng_new->gamma_theta = rng->gamma_theta;
 
     return rng_new;
 }

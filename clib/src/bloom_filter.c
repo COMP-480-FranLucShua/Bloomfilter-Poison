@@ -28,12 +28,13 @@ struct BloomFilter {
     uint32_t seeds[]; // flexible array of seeds
 };
 
-BloomFilter *bfilter_new(size_t size, size_t k, Generator *rng_interface, void *rng_instance) {
-    BloomFilter *bfilter = (BloomFilter *)malloc(sizeof(BloomFilter) + sizeof(uint32_t) * k);
+BloomFilter *bfilter_new(size_t size, size_t k, HashFunction hash_function, Generator *rng_interface, void *rng_instance) {
+    BloomFilter *bfilter = (BloomFilter *)calloc(1, sizeof(BloomFilter) + sizeof(uint32_t) * k);
 
+    bfilter->filter = bvec_new(bfilter->filter_range);
+    bfilter->hash_function = hash_function;
     bfilter->filter_range = size;
     bfilter->k = k;
-    bfilter->filter = bvec_new(bfilter->filter_range);
 
     rng_interface->gen_integers_unique(rng_instance, bfilter->seeds, k);
 
