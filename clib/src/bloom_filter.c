@@ -2,8 +2,19 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "bloom_filter.h"
+#include "interfaces/filter.h"
 #include "interfaces/generator.h"
 #include "bit_vector.h"
+
+size_t bf_get_num_hf(void *self);
+size_t bf_get_filter_len(void *self);
+BitVector *bf_get_filter(void *self);
+
+const Filter bloom_filter_interface = {
+	.get_num_hf = bf_get_num_hf,
+	.get_filter_len = bf_get_filter_len,
+	.get_filter = bf_get_filter,
+};
 
 typedef uint32_t (*HashFunction)(const uint8_t *val, size_t len, uint32_t seed);
 
@@ -62,4 +73,19 @@ BloomFilter *bfilter_clone(BloomFilter * bfilter) {
     bfilter_new->filter = bvec_clone(bfilter->filter);
 
     return bfilter_new;
+}
+
+size_t bf_get_num_hf(void *self) {
+    BloomFilter *bf = self;
+    return bf->k;
+}
+
+size_t bf_get_filter_len(void *self) {
+    BloomFilter *bf = self;
+    return bf->filter_range;
+}
+
+BitVector *bf_get_filter(void *self) {
+    BloomFilter *bf = self;
+    return bf->filter;
 }
