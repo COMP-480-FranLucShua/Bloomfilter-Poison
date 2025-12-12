@@ -1,33 +1,35 @@
-#include "interface/sampler.h"
+#include "interfaces/sampler.h"
+
 #include "str_sampler.h"
 #include "rand_generator.h"
 
-#include <cstdint>
+#include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
 
-char* str_sampler_sample(void *self);
+void str_sampler_sample(void *self, char *sample, size_t *length);
 
 Sampler str_sampler_interface = {
 	.sample = str_sampler_sample
 };
 
-typedef struct {
+struct Str_Sampler {
 	char **strings;
-	size_t *keys;
-	size_t idx;
-} Str_Sampler;
+	uint32_t *keys;
+	uint32_t idx;
+};
 
 Str_Sampler* str_sampler_create(char **strings, uint64_t seed) {
-	size_t num_strings;
-	size_t *keys;
+	uint32_t num_strings;
+	uint32_t *keys;
 	RandomGenerator *rng;
 
 	Str_Sampler *smplr = malloc(sizeof(Str_Sampler));
 	
 	// Generate sample order
 	num_strings = sizeof(*strings);
-	keys = malloc(num_strings);
+	keys = malloc(num_strings * sizeof(uint32_t));
 	rng = rng_new(seed, seed);
 	rng_generate_int32_bounded_array(rng, num_strings, keys, num_strings);
 	rng_destroy(rng);
@@ -35,19 +37,21 @@ Str_Sampler* str_sampler_create(char **strings, uint64_t seed) {
 	smplr->keys = keys;
 	smplr->strings = strings;
 	smplr->idx = 0;
+
+	return smplr;
 }
 
 void str_sampler_destroy(Str_Sampler *self) {
+	free(self->keys);
 	free(self);
 }
 
-char* str_sampler_sample(void *self) {
-	char* sample;
-
+void str_sampler_sample(void *self, char* sample, size_t *length) {
 	Str_Sampler *str_smplr = self;
 
 	sample = str_smplr->strings[str_smplr->keys[str_smplr->idx]];
-	str_smplr->idx++;
+	size_t len = strlen(sample);
+	*length = len;
 
-	return sample;
+	str_smplr->idx++;
 }
