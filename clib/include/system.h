@@ -2,9 +2,21 @@
 #define SYSTEM_EMULATOR_H
 
 #include <stdbool.h>
+#include "interfaces/system.h"
 #include "hash_set.h"
 #include "bloom_filter.h"
 #include "rand_generator.h"
+
+void sys_insert(void *, void *data, size_t len);
+/**
+ * Stores delay result in delay, and fp result in result variable variable
+ */
+bool sys_query(void *, void *data, size_t len, double *delay, bool *fp);
+
+const System system_emulator_interface = {
+    .query = sys_query,
+    .insert = sys_insert,
+};
 
 typedef struct {
     HashSet *set;
@@ -21,13 +33,9 @@ SystemEmulator *sys_new(HashSet *set, BloomFilter *bfilter, RandomGenerator *rng
 void *sys_destroy(SystemEmulator *sys);
 SystemEmulator *sys_clone(SystemEmulator *sys);
 
-SystemEmulator *sys_insert(SystemEmulator *, void *data, size_t len);
 SystemEmulator *sys_insert_array(SystemEmulator *, void **data_array, size_t array_size, size_t data_len);
 
-/**
- * Stores delay result in delay variable
- */
-bool sys_query(SystemEmulator *, void *data, size_t len, double *delay, bool *fp);
+
 
 /**
  * Caller is in charge of passing an allocated query result array

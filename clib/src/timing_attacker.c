@@ -1,6 +1,6 @@
-#include "../include/interfaces/attacker.h"
-#include "../include/interfaces/filter.h"
-#include "../include/interfaces/sampler.h"
+#include "interfaces/attacker.h"
+#include "interfaces/system.h"
+#include "interfaces/sampler.h"
 
 #include <string.h>
 #include <sys/time.h>

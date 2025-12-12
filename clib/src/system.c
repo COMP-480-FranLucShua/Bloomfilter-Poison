@@ -34,11 +34,11 @@ SystemEmulator *sys_clone(SystemEmulator *sys) {
     return new_sys;
 }
 
-SystemEmulator *sys_insert(SystemEmulator *sys, void *data, size_t len) {
+void sys_insert(void *self, void *data, size_t len) {
+    SystemEmulator *sys = (SystemEmulator *)self;
+
     hset_insert(sys->set, data, len);
     bfilter_insert(sys->bfilter, data, len);
-
-    return sys;
 }
 
 SystemEmulator *sys_insert_array(SystemEmulator *sys, void **data_array, size_t array_size, size_t data_len) {
@@ -49,8 +49,9 @@ SystemEmulator *sys_insert_array(SystemEmulator *sys, void **data_array, size_t 
     return sys;
 }
 
-bool sys_query(SystemEmulator *sys, void *data, size_t len, double *delay, bool *fp) {
-    
+bool sys_query(void *self, void *data, size_t len, double *delay, bool *fp) {
+    SystemEmulator *sys = (SystemEmulator *)self;
+
     bool in_filter = bfilter_query(sys->bfilter, data, len);
     bool in_set = hset_query(sys->set, data, len);
     
