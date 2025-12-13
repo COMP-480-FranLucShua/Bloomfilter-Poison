@@ -1,3 +1,12 @@
+from c_modules import (
+    SystemEmulator, 
+    BloomFilter, 
+    HashSet, 
+    RandomNumberGenerator,
+    StringArray,
+    StringSampler,
+    NaiveAttacker)
+
 from yaml_parser.loader import load_yaml
 import pandas as pd
 import sys
@@ -18,6 +27,35 @@ def main():
         sys.exit(1)
 
     load_dataset(config.dataset.path)
+
+    with RandomNumberGenerator(12345):
+        set = HashSet(256, 123456)
+        rng = RandomNumberGenerator(123456)
+        filter = BloomFilter(4, 2, rng)
+
+        system = SystemEmulator(set, filter, rng, 1.0)
+
+        data = StringArray(["abc", "def", "ge", "abce", "efg", "hijk"])
+
+        sampler = StringSampler(data, rng)
+
+        attacker = NaiveAttacker(system, sampler)
+
+        attacker.attack(4)
+
+        sample = sampler.sample_array(len(data))
+
+        print(system.query_array(sample))
+
+        attacker.close()
+
+        sampler.close()
+
+        system.close()
+
+        filter.close()
+        rng.close()
+        set.close()
 
 if __name__ == "__main__":
     main()
