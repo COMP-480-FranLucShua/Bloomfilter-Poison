@@ -19,6 +19,15 @@ def load_dataset(path: str):
     return urllist
 
 # ------------------------------------ UTILITIES ------------------------------------ 
+
+def assemble_system(buckets: int, num_hfs: int, seed: int, init_insert_size: int, urls) -> SystemEmulator:
+    rng: RandomNumberGenerator = RandomNumberGenerator(seed)
+    bf: BloomFilter = BloomFilter(buckets, num_hfs, rng)
+    system: SystemEmulator = SystemEmulator(set(), bf, rng, 5.0)
+    system.insert_array(urls[:init_insert_size])
+    return system
+
+
 def main():
     try:
         config = load_yaml("config.yaml")
