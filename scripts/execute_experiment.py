@@ -13,6 +13,8 @@ import sys
 
 yaml_file_path = 'config.yaml'
 
+# ------------------------------------ UTILITIES ------------------------------------ 
+
 def load_dataset(path: str):
     data = pd.read_csv(path, sep="\t")
     urllist = data.ClickURL.dropna().unique() # NOTE: 380k items
@@ -20,10 +22,7 @@ def load_dataset(path: str):
 
 def run_pipeline(system, test_sample, attacker, attack_size):
     attacker.attack(attack_size)
-
     return system.query_array(test_sample)
-
-# ------------------------------------ UTILITIES ------------------------------------ 
 
 def assemble_system(buckets: int, num_hfs: int, seed: int, init_insert_size: int, urls) -> SystemEmulator:
     rng: RandomNumberGenerator = RandomNumberGenerator(seed)
