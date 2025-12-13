@@ -23,7 +23,7 @@ typedef struct Str_Sampler Str_Sampler;
 Str_Sampler* str_sampler_create(
 	char **strings,
 	size_t num_strings,
-	Generator *rng,
+	const Generator *rng,
 	void *rng_inst
 );
 

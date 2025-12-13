@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -22,11 +23,11 @@ struct Str_Sampler {
 	size_t num_strings;
 	uint32_t *keys;
 	uint32_t idx;
-	Generator *rng;
+	const Generator *rng;
 	void *rng_inst;
 };
 
-Str_Sampler* str_sampler_create(char **strings, size_t num_strings, Generator *rng, void *rng_inst) {
+Str_Sampler* str_sampler_create(char **strings, size_t num_strings, const Generator *rng, void *rng_inst) {
 	uint32_t *keys;
 
 	Str_Sampler *smplr = malloc(sizeof(Str_Sampler));
@@ -53,19 +54,22 @@ void str_sampler_destroy(Str_Sampler *self) {
 void *str_sampler_sample(void *self, size_t *length) {
 	Str_Sampler *str_smplr = (Str_Sampler *)self;
 
-	size_t str_idx = str_smplr->keys[str_smplr->idx];
-	void *sample = str_smplr->strings[str_idx];
-
-	size_t len = strlen(sample);
-	*length = len;
-
-	str_smplr->idx++;
-
-	if (str_smplr->idx == str_smplr->num_strings) {
+	if (str_smplr->idx >= str_smplr->num_strings) {
 		// regenerate
 		str_smplr->rng->gen_choice(str_smplr->rng_inst, str_smplr->keys, str_smplr->num_strings, str_smplr->num_strings);
 		str_smplr->idx = 0;
 	}
+
+	size_t str_idx = str_smplr->keys[str_smplr->idx];
+
+	void *sample = str_smplr->strings[str_idx];
+
+	size_t len = strlen(sample);
+
+	if (length)
+		*length = len;
+
+	str_smplr->idx++;
 
 	return sample;
 }
