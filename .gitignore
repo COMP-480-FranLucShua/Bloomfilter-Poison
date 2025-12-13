@@ -205,3 +205,87 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Compiled binaries and object files
+*.o
+*.out
+*.exe
+*.bin
+a.out
+
+# Libraries
+*.a
+*.so
+*.dylib
+
+# Debugging and profiling files
+*.dSYM/
+*.prof
+*.gprof
+*.gcda
+*.gcno
+*.gcov
+*.lcov
+
+# Build directories/artifacts
+/build/
+/dist/
+/target/
+
+# Package management (e.g., vcpkg, conan)
+/vcpkg_installed/
+conanbuildinfo.*
+conan_config/
+.conan/
+
+# Common IDE/Editor/OS files
+
+# Visual Studio / VS Code
+*.aps
+*.bsc
+*.chm
+*.sbr
+*.supp
+*.ncb
+*.rcs
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.suo
+*.user
+*.ilk
+*.idb
+*.opt
+*.aps
+*.res
+*.obj
+.vs/
+.vscode/
+
+# Xcode (macOS)
+build/
+DerivedData/
+*.xcodeproj/
+!*.xcodeproj/project.xcworkspace
+!*.xcodeproj/xcuserdata
+!*.xcodeproj/xcshareddata
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# NetBeans
+nbproject/
+/nbbuild/
+/dist/
+
+# Vim/Emacs swap and backup files
+*~
+\#*
+.\#*
+
+# Operating System files
+.DS_Store
+Thumbs.db
