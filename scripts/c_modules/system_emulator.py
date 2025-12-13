@@ -1,9 +1,11 @@
 import ctypes
-from ctypes import c_void_p, c_double
+from ctypes import c_void_p, c_double, POINTER
 
 from typing import Protocol, runtime_checkable
 
 from .interfaces import SystemInterface, GeneratorInterface, FilterInterface, SetInterface
+
+from .data_array import DataArray
 
 from ._lib import lib
 from ._c_object import _C_Object
@@ -23,9 +25,9 @@ class Set(Protocol):
     _interface: SetInterface
     _c_obj: c_void_p
 
-lib.sys_new.argtypes = [SetInterface, c_void_p,
-                        FilterInterface, c_void_p,
-                        GeneratorInterface, c_void_p,
+lib.sys_new.argtypes = [POINTER(SetInterface), c_void_p,
+                        POINTER(FilterInterface), c_void_p,
+                        POINTER(GeneratorInterface), c_void_p,
                         c_double]
 lib.sys_new.restype = c_void_p
 
@@ -46,3 +48,21 @@ class SystemEmulator(_C_Object):
         
         super().__init__("system-emulator", c_obj, lib.sys_destroy)
         self._interface = ctypes.byref(SystemInterface.in_dll(lib, "system_emulator_interface"))
+    
+    def query_array(self, array: DataArray):
+        """
+        Docstring for query_array
+        
+        :param self: Description
+        :param keys: keys is an array of strings
+        """
+        pass
+
+    def insert_array(self, array: DataArray):
+        """
+        Docstring for insert_array
+        
+        :param self: Description
+        :param keys: an array of strings
+        """
+        pass
