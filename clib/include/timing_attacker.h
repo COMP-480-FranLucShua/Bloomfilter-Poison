@@ -11,6 +11,8 @@ extern "C" {
 // Opaque struct -- implementation is hidden in the .c file
 typedef struct TimingAttacker TimingAttacker;
 
+extern const Attacker timing_attacker_interface;
+
 /**
  * Create a TimingAttacker instance.
  *

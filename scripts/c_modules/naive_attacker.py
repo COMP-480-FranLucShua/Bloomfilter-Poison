@@ -1,3 +1,7 @@
+import matplotlib
+matplotlib.use("TkAgg")  # or Qt5Agg
+import matplotlib.pyplot as plt
+
 import ctypes
 from ctypes import c_void_p, POINTER, c_size_t
 
@@ -41,6 +45,4 @@ class NaiveAttacker(_C_Object):
         self._interface = ctypes.pointer(AttackerInterface.in_dll(lib, "naive_attacker_interface"))
     
     def attack(self, attack_size: int):
-        print("attacking")
         self._interface.contents.attack(self._c_obj, c_size_t(attack_size))
-        print("attacked")

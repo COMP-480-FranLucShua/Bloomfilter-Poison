@@ -7,6 +7,7 @@
 #include "t_kmeans.h"
 #include "t_system.h"
 #include "t_naive_attacker.h"
+#include "t_timing_attacker.h"
 
 
 static MunitSuite t_suites[] = {
@@ -18,6 +19,7 @@ static MunitSuite t_suites[] = {
     {NULL, NULL, NULL, 0, 0}, // t_kmeans_suite
     {NULL, NULL, NULL, 0, 0}, // t_system_suite
     {NULL, NULL, NULL, 0, 0}, // t_naive_attacker_suite
+    {NULL, NULL, NULL, 0, 0}, // t_timing_attacker_suite
     {NULL, NULL, NULL, 0, 0},
     // NULL,
 };
@@ -40,6 +42,7 @@ int main(int argc, char * argv[]) {
     t_suites[5] = t_kmeans_suite;
     t_suites[6] = t_system_suite;
     t_suites[7] = t_naive_attacker_suite;
+    t_suites[8] = t_timing_attacker_suite;
 
     return munit_suite_main(&t_suite, NULL, argc, argv);
 }

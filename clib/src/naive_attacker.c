@@ -46,8 +46,6 @@ void naive_attacker_destroy(Naive_Attacker *self) {
 }
 
 void naive_attacker_attack(void *self, size_t attack_size) {
-	printf("Performing naive attack of size %lu\n", attack_size);
-
 	Naive_Attacker *na = self;
 
 	char *sample;

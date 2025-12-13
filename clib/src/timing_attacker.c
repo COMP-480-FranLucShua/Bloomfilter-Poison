@@ -1,6 +1,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "interfaces/attacker.h"
 #include "interfaces/system.h"
@@ -52,12 +53,16 @@ void timing_attacker_destroy(TimingAttacker* ta) {
 }
 
 void timing_attacker_attack(void *self, size_t attack_size) {
+	if (attack_size == 0)
+		return;
+	
 	TimingAttacker *ta = (TimingAttacker *)self;
 
+	
 	// train attacker
 	size_t training_set_size = (size_t)(attack_size * ta->training_proportion);
 	size_t insert_size = training_set_size / 2;
-
+	
 	double threshold = train(ta, training_set_size, insert_size);
 
 	size_t current_attack_size = insert_size;
@@ -68,7 +73,7 @@ void timing_attacker_attack(void *self, size_t attack_size) {
 	size_t length;
 
 	// NOTE: sample is owned by smplr_inst
-	ta->smplr->sample(ta->smplr_inst, &length);
+	sample = ta->smplr->sample(ta->smplr_inst, &length);
 
 	// attack until attack size met or entire dataset sampled
 	for (size_t i = 0; current_attack_size < attack_size && i < ta->smplr->length(ta->smplr_inst); i++) {
@@ -79,6 +84,8 @@ void timing_attacker_attack(void *self, size_t attack_size) {
 			ta->sstm->insert(ta->sstm_inst, sample, length);
 			current_attack_size ++;
 		}
+
+		sample = ta->smplr->sample(ta->smplr_inst, &length);
 	}
 }
 

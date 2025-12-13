@@ -28,8 +28,8 @@ def load_dataset(path: str):
     return urllist
 
 def run_pipeline(system, test_sample, attacker, attack_size):
-    print("Beginning attack")
-    print(attacker.sampler._strings[:10].to_python())
+    # print("Beginning attack")
+    # print(attacker.sampler._strings[:10].to_python())
     attacker.attack(attack_size)
     return system.query_array(test_sample)
 
