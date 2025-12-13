@@ -6,7 +6,9 @@ from c_modules import (
     StringArray,
     StringSampler,
     NaiveAttacker,
-    DataArray)
+    DataArray,
+    TimingAttacker,
+)
 
 from yaml_parser.loader import load_yaml
 import pandas as pd
