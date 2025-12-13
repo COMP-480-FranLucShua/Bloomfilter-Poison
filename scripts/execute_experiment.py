@@ -18,6 +18,11 @@ def load_dataset(path: str):
     urllist = data.ClickURL.dropna().unique() # NOTE: 380k items
     return urllist
 
+def run_pipeline(system, test_sample, attacker, attack_size):
+    attacker.attack(attack_size)
+
+    return system.query_array(test_sample)
+
 # ------------------------------------ UTILITIES ------------------------------------ 
 def main():
     try:
@@ -48,11 +53,8 @@ def main():
         print(system.query_array(sample))
 
         attacker.close()
-
         sampler.close()
-
         system.close()
-
         filter.close()
         rng.close()
         set.close()
