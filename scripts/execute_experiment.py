@@ -31,7 +31,13 @@ def main():
         print(e)
         sys.exit(1)
 
-    load_dataset(config.dataset.path)
+    ## *** REPLACE WITH YAML VALUES
+    initial_insert_size = 100000 # initial sample to 
+    test_sample_size = 50000 # size of reserved testing set (for evaluating fp rate)
+
+    dataset = load_dataset(config.dataset.path)
+
+
 
     with RandomNumberGenerator(12345):
         set = HashSet(256, 123456)
