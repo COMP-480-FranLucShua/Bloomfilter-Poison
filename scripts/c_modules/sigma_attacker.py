@@ -27,14 +27,14 @@ lib.sigma_attacker_create.restype = c_void_p
 lib.sigma_attacker_destroy.argtypes = [c_void_p]
 lib.sigma_attacker_destroy.restype = None
 
-class TimingAttacker(_C_Object):
-    def __init__(self, sys: System, filter: Filter, training_proportion: float):
+class SigmaAttacker(_C_Object):
+    def __init__(self, sys: System, filter: Filter):
         assert isinstance(sys, System)
         assert isinstance(filter, Filter)
 
         c_obj = lib.sigma_attacker_create(sys._interface, sys._c_obj,
                                           filter._interface, filter._c_obj,
-                                          c_double(training_proportion))
+                                          )
         
         super().__init__("sigma-attacker", c_obj, lib.sigma_attacker_destroy)
         self._interface = ctypes.pointer(AttackerInterface.in_dll(lib, "sigma_attacker_interface"))

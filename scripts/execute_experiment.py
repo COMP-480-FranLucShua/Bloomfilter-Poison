@@ -8,6 +8,7 @@ from c_modules import (
     NaiveAttacker,
     DataArray,
     TimingAttacker,
+    SigmaAttacker,
 )
 
 from yaml_parser.loader import load_yaml
