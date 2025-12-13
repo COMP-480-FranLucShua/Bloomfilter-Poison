@@ -64,10 +64,18 @@ double kmeans_threshold_1d(double *array, size_t array_size) {
 	double centroids[2];
 
 	// Define Initial clusters
-	RandomGenerator *rng = rng_new(1);
+	RandomGenerator *rng = rng_new(0x12345678);
 
-	centroids[0] = array[rng_generate_int32_bounded(rng, array_size)];
-	centroids[1] = array[rng_generate_int32_bounded(rng, array_size)];
+	uint32_t *sample_indices = (uint32_t *)malloc(array_size * sizeof(uint32_t));
+	rng_generate_choice(rng, sample_indices, array_size, array_size);
+
+	centroids[0] = array[sample_indices[0]];
+	for (size_t i = 1; i < array_size; i++) {
+		centroids[1] = array[sample_indices[i]];
+		if (centroids[1] != centroids[0])
+			break;
+	}
+	free(sample_indices);
 
 	bool changed = true;
 	size_t iter = 0;

@@ -17,6 +17,9 @@ Naive_Attacker* naive_attacker_create(
 
 void naive_attacker_destroy(Naive_Attacker *na);
 
+/**
+ * perform a naive attack (random sampling attack data)
+ */
 void naive_attacker_attack(void *ta, size_t attack_size);
 
 

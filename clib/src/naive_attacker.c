@@ -35,6 +35,8 @@ Naive_Attacker *naive_attacker_create(
 	na->smplr = smplr;
 	na->smplr_inst = smplr_inst;
 
+	na->time_threshold = 0;
+
 	return na;
 }
 

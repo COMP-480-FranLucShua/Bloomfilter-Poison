@@ -17,18 +17,18 @@ const System system_emulator_interface = {
  * Creator of SystemEmulator must free set, bfilter, and rng after use
  */
 struct SystemEmulator {
-    Set *set;
+    const Set *set;
     void *set_inst;
-    Filter *filter;
+    const Filter *filter;
     void *filter_inst;
-    Generator *rng;
+    const Generator *rng;
     void *rng_inst;
     double system_delay;
 };
 
-SystemEmulator *sys_new(Set *set, void *set_inst,
-                        Filter *filter, void *filter_inst,
-                        Generator *rng, void *rng_inst,
+SystemEmulator *sys_new(const Set *set, void *set_inst,
+                        const Filter *filter, void *filter_inst,
+                        const Generator *rng, void *rng_inst,
                         double delay) {
     SystemEmulator *sys = (SystemEmulator *)malloc(sizeof(SystemEmulator));
 
@@ -78,9 +78,11 @@ bool sys_query(void *self, void *data, size_t len, double *delay, bool *fp) {
     // include random delay according to rng distribution
     query_delay += sys->rng->gen_distribution(sys->rng_inst);
     
-    *delay = query_delay;
+    if (delay)
+        *delay = query_delay;
 
-    *fp = in_filter && !in_set;
+    if (fp)
+        *fp = in_filter && !in_set;
 
     return in_set;
 }
@@ -106,4 +108,10 @@ void sys_query_array(void *self, void **data_array, size_t *data_lens, size_t ar
 
     if (fp_count)
         *fp_count = false_pos_count;
+}
+
+size_t sys_saturation(void *self) {
+    SystemEmulator *sys = self;
+
+    return sys->set->length(sys->set_inst);
 }

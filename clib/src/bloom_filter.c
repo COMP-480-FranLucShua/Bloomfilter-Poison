@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 #include "bloom_filter.h"
 #include "interfaces/filter.h"
@@ -28,12 +29,13 @@ struct BloomFilter {
     uint32_t seeds[]; // flexible array of seeds
 };
 
-BloomFilter *bfilter_new(size_t size, size_t k, Generator *rng_interface, void *rng_instance) {
-    BloomFilter *bfilter = (BloomFilter *)malloc(sizeof(BloomFilter) + sizeof(uint32_t) * k);
+BloomFilter *bfilter_new(size_t size, size_t k, HashFunction hash_function, const Generator *rng_interface, void *rng_instance) {
+    BloomFilter *bfilter = (BloomFilter *)calloc(1, sizeof(BloomFilter) + sizeof(uint32_t) * k);
 
+    bfilter->filter = bvec_new(size);
+    bfilter->hash_function = hash_function;
     bfilter->filter_range = size;
     bfilter->k = k;
-    bfilter->filter = bvec_new(bfilter->filter_range);
 
     rng_interface->gen_integers_unique(rng_instance, bfilter->seeds, k);
 
@@ -53,7 +55,8 @@ void *bfilter_destroy(BloomFilter *bfilter) {
 void bfilter_insert(void *self, void *data, size_t data_len) {
     BloomFilter *bfilter = (BloomFilter *)self;
     for (size_t i = 0; i < bfilter->k; i++) {
-        size_t idx = bfilter->hash_function(data, data_len, bfilter->seeds[i]);
+        size_t idx = bfilter->hash_function(data, data_len, bfilter->seeds[i]) % bfilter->filter_range;
+
         bvec_set_bit(bfilter->filter, idx, 1);
     }
 }
@@ -62,7 +65,7 @@ bool bfilter_query(void *self, void *data, size_t data_len) {
     BloomFilter *bfilter = (BloomFilter *)self;
     uint_fast8_t result = 0;
     for (size_t i = 0; i < bfilter->k; i++) {
-        size_t idx = bfilter->hash_function(data, data_len, bfilter->seeds[i]);
+        size_t idx = bfilter->hash_function(data, data_len, bfilter->seeds[i]) % bfilter->filter_range;
         result |= bvec_get_bit(bfilter->filter, idx);
     }
     return (bool)result;
@@ -90,4 +93,9 @@ size_t bf_get_filter_len(void *self) {
 BitVector *bf_get_filter(void *self) {
     BloomFilter *bf = self;
     return bf->filter;
+}
+
+void bfilter_dump(void *self) {
+    BloomFilter *bf = self;
+    bvec_dump(bf->filter);
 }
