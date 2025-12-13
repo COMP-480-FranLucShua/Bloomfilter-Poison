@@ -100,7 +100,7 @@ HashSet *hset_clone(void *self) {
     HashSet *new_hash_set = (HashSet *)malloc(sizeof(HashSet));
     memcpy(new_hash_set, hset, sizeof(HashSet));
 
-    new_hash_set->table = (HSet_Bucket *)malloc(hset->capacity, sizeof(HSet_Bucket));
+    new_hash_set->table = (HSet_Bucket *)calloc(hset->capacity, sizeof(HSet_Bucket));
 
     memcpy(new_hash_set->table, hset->table, hset->capacity * sizeof(HSet_Bucket));
 

@@ -18,7 +18,7 @@ BitVector *bvec_new(size_t len) {
         num_bytes ++;
     }
 
-    BitVector *bvec = (BitVector *)calloc(num_bytes, sizeof(BitVector));
+    BitVector *bvec = (BitVector *)calloc(1, sizeof(BitVector) + num_bytes);
 
     bvec->sum = 0;
     bvec->len = len;
