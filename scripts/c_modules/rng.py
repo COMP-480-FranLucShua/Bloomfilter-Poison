@@ -18,4 +18,4 @@ class RandomNumberGenerator(_C_Object):
     def __init__(self, seed: int):
         c_obj = lib.rng_new(c_uint(seed))
         super().__init__("rng", c_obj, lib.rng_destroy)
-        self._interface = ctypes.byref(GeneratorInterface.in_dll(lib, "rand_generator_interface"))
+        self._interface = ctypes.pointer(GeneratorInterface.in_dll(lib, "rand_generator_interface"))

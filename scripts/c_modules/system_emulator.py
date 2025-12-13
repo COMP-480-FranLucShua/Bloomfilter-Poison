@@ -1,5 +1,5 @@
 import ctypes
-from ctypes import c_void_p, c_double, POINTER
+from ctypes import c_void_p, c_double, POINTER, c_size_t
 
 from typing import Protocol, runtime_checkable
 
@@ -47,7 +47,7 @@ class SystemEmulator(_C_Object):
                             c_double(delay))
         
         super().__init__("system-emulator", c_obj, lib.sys_destroy)
-        self._interface = ctypes.byref(SystemInterface.in_dll(lib, "system_emulator_interface"))
+        self._interface = ctypes.pointer(SystemInterface.in_dll(lib, "system_emulator_interface"))
     
     def query_array(self, array: DataArray):
         """
@@ -55,8 +55,20 @@ class SystemEmulator(_C_Object):
         
         :param self: Description
         :param keys: keys is an array of strings
+
+        returns number of false positives
         """
-        pass
+        false_pos = c_size_t(0)
+
+        self._interface.contents.query_array(self._c_obj,
+                                             array._ptr_array,
+                                             array._len_array,
+                                             array._n,
+                                             None,
+                                             None,
+                                             ctypes.pointer(false_pos))
+        
+        return int(false_pos.value)
 
     def insert_array(self, array: DataArray):
         """
@@ -65,4 +77,7 @@ class SystemEmulator(_C_Object):
         :param self: Description
         :param keys: an array of strings
         """
-        pass
+        self._interface.contents.insert_array(self._c_obj,
+                                             array._ptr_array,
+                                             array._len_array,
+                                             array._n)
