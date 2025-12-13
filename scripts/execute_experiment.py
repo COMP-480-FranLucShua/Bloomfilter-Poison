@@ -61,7 +61,14 @@ def main():
 
     dataset = load_dataset(config.dataset.path)
 
-    rng: RandomNumberGenerator = RandomNumberGenerator(seed)
+    rng: RandomNumberGenerator = RandomNumberGenerator(config.seed)
+    system_naive = assemble_system(1024, 3, config.seed, 10, rng, dataset)
+    system_timing = assemble_system(1024, 3, config.seed, 10, rng, dataset)
+    system_sigma = assemble_system(1024, 3, config.seed, 10, rng, dataset)
+
+    attacker_naive = assemble_naive_attacker(system_naive, rng, dataset)
+    attacker_timing = assemble_timing_attacker(system_timing, rng, dataset)
+    attacker_sigma = assemble_sigma_attacker(system_naive, system_sigma.)
 
 
     with RandomNumberGenerator(12345):
