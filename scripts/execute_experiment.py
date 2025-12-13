@@ -25,7 +25,7 @@ def run_pipeline(system, test_sample, attacker, attack_size):
     attacker.attack(attack_size)
     return system.query_array(test_sample)
 
-def assemble_system(buckets: int, num_hfs: int, seed: int, init_insert_size: int, urls) -> SystemEmulator:
+def assemble_system(buckets: int, num_hfs: int, seed: int, init_insert_size: int, rng: RandomNumberGenerator, urls) -> SystemEmulator:
     bf: BloomFilter = BloomFilter(buckets, num_hfs, rng)
     system: SystemEmulator = SystemEmulator(HashSet(1024, seed), bf, rng, 5.0)
     system.insert_array(DataArray.from_array(urls[:init_insert_size]))
