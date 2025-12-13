@@ -25,8 +25,8 @@ lib.timing_attacker_create.argtypes = [POINTER(SystemInterface),
                                       c_double]
 lib.timing_attacker_create.restype = c_void_p
 
-lib.timing_attacker_create.argtypes = [c_void_p]
-lib.timing_attacker_create.restype = None
+lib.timing_attacker_destroy.argtypes = [c_void_p]
+lib.timing_attacker_destroy.restype = None
 
 class TimingAttacker(_C_Object):
     def __init__(self, sys: System, sampler: Sampler, training_proportion: float):
