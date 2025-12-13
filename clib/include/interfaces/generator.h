@@ -1,6 +1,7 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 typedef struct {

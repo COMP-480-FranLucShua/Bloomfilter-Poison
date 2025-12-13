@@ -1,4 +1,4 @@
-from c_types import c_void_p
+from ctypes import c_void_p
 
 class _C_Object:
     """
