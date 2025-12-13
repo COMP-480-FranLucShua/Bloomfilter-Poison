@@ -50,4 +50,9 @@ void sys_insert_array(void *, void **data_array, size_t *data_lens, size_t array
  */
 void sys_query_array(void *, void **data_array, size_t *data_lens, size_t array_size, bool *queries, double *delays, size_t *fp_count);
 
+/**
+ * return number of data points in system
+ */
+size_t sys_saturation(void *);
+
 #endif

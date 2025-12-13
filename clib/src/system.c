@@ -109,3 +109,9 @@ void sys_query_array(void *self, void **data_array, size_t *data_lens, size_t ar
     if (fp_count)
         *fp_count = false_pos_count;
 }
+
+size_t sys_saturation(void *self) {
+    SystemEmulator *sys = self;
+
+    return sys->set->length(sys->set_inst);
+}
