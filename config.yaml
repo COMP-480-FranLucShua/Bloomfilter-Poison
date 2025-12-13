@@ -30,7 +30,7 @@ system_emulator:
 # Dataset
 # ------------------
 dataset:
-  path: "data/malicious_urls.csv"
+  path: "data/malicious_urls.txt"
   benign_label: 0
   malicious_label: 1
 
