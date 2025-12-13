@@ -25,12 +25,24 @@ def run_pipeline(system, test_sample, attacker, attack_size):
     return system.query_array(test_sample)
 
 def assemble_system(buckets: int, num_hfs: int, seed: int, init_insert_size: int, urls) -> SystemEmulator:
-    rng: RandomNumberGenerator = RandomNumberGenerator(seed)
     bf: BloomFilter = BloomFilter(buckets, num_hfs, rng)
-    system: SystemEmulator = SystemEmulator(set(), bf, rng, 5.0)
+    system: SystemEmulator = SystemEmulator(HashSet(1024, seed), bf, rng, 5.0)
     system.insert_array(urls[:init_insert_size])
     return system
 
+def assemble_naive_attacker(sys: SystemEmulator, rng: RandomNumberGenerator, urls) -> NaiveAttacker:
+    sampler: StringSampler = StringSampler(urls, rng)
+    attacker: NaiveAttacker = NaiveAttacker(sys, sampler)
+    return attacker
+
+def assemble_timing_attacker(sys: SystemEmulator, rng: RandomNumberGenerator, urls) -> TimingAttacker:
+    sampler: StringSampler = StringSampler(urls, rng)
+    attacker: TimingAttacker = TimingAttacker(sys, sampler, 0.15)
+    return attacker
+
+def assemble_sigma_attacker(sys: SystemEmulator, bf: BloomFilter) -> SigmaAttacker:
+    attacker: SigmaAttacker = SigmaAttacker(sys, bf)
+    return attacker
 
 def main():
     try:
@@ -45,6 +57,7 @@ def main():
 
     dataset = load_dataset(config.dataset.path)
 
+    rng: RandomNumberGenerator = RandomNumberGenerator(seed)
 
 
     with RandomNumberGenerator(12345):
