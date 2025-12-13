@@ -7,3 +7,4 @@ from .bloom_filter import BloomFilter
 from .str_array import StringArray
 from .data_array import DataArray
 from .str_sampler import StringSampler
+from .naive_attacker import NaiveAttacker
