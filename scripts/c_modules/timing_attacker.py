@@ -33,6 +33,8 @@ class TimingAttacker(_C_Object):
         assert isinstance(sys, System)
         assert isinstance(sampler, Sampler)
 
+        self.sampler = sampler
+
         c_obj = lib.timing_attacker_create(sys._interface, sys._c_obj,
                                           sampler._interface, sampler._c_obj,
                                           c_double(training_proportion))

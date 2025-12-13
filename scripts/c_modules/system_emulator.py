@@ -5,7 +5,7 @@ from typing import Protocol, runtime_checkable
 
 from .interfaces import SystemInterface, GeneratorInterface, FilterInterface, SetInterface
 
-from .data_array import DataArray
+from .data_array import StringArray
 
 from ._lib import lib
 from ._c_object import _C_Object
@@ -42,6 +42,7 @@ class SystemEmulator(_C_Object):
         assert isinstance(rng, Generator)
 
         self.filter = filter
+        self.set = set
 
         c_obj = lib.sys_new(set._interface, set._c_obj,
                             filter._interface, filter._c_obj,
@@ -51,7 +52,7 @@ class SystemEmulator(_C_Object):
         super().__init__("system-emulator", c_obj, lib.sys_destroy)
         self._interface = ctypes.pointer(SystemInterface.in_dll(lib, "system_emulator_interface"))
     
-    def query_array(self, array: DataArray):
+    def query_array(self, array: StringArray):
         """
         Docstring for query_array
         
@@ -63,16 +64,16 @@ class SystemEmulator(_C_Object):
         false_pos = c_size_t(0)
 
         self._interface.contents.query_array(self._c_obj,
-                                             array._ptr_array,
-                                             array._len_array,
-                                             array._n,
+                                             array.c_ptrs,
+                                             array.c_lens,
+                                             c_size_t(len(array)),
                                              None,
                                              None,
                                              ctypes.pointer(false_pos))
         
         return int(false_pos.value)
 
-    def insert_array(self, array: DataArray):
+    def insert_array(self, array: StringArray):
         """
         Docstring for insert_array
         
@@ -80,6 +81,6 @@ class SystemEmulator(_C_Object):
         :param keys: an array of strings
         """
         self._interface.contents.insert_array(self._c_obj,
-                                             array._ptr_array,
-                                             array._len_array,
-                                             array._n)
+                                             array.c_ptrs,
+                                             array.c_lens,
+                                             c_size_t(len(array)))

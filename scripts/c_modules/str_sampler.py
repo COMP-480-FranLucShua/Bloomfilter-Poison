@@ -29,18 +29,21 @@ class StringSampler(_C_Object):
     def __init__(self, strings: StringArray, rng: Generator):
         assert isinstance(rng, Generator)
 
-        c_obj = lib.str_sampler_create(strings.c_strings, 
+        self._strings = strings
+        self._rng = rng
+
+        c_obj = lib.str_sampler_create(self._strings.c_strings, 
                                        c_size_t(len(strings)),
-                                       rng._interface,
-                                       rng._c_obj)
+                                       self._rng._interface,
+                                       self._rng._c_obj)
         
         super().__init__("string-sampler", c_obj, lib.str_sampler_destroy)
         self._interface = ctypes.pointer(SamplerInterface.in_dll(lib, "str_sampler_interface"))
     
     def sample_array(self, sample_size: int):
-        data_array = DataArray(sample_size)
+        data_array = StringArray(size=sample_size)
 
-        self._interface.contents.sample_array(self._c_obj, data_array._ptr_array, data_array._len_array, c_size_t(sample_size))
+        self._interface.contents.sample_array(self._c_obj, data_array.c_ptrs, data_array.c_lens, c_size_t(sample_size))
 
         return data_array
 

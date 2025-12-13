@@ -1,5 +1,6 @@
 import ctypes
 from ctypes import POINTER, c_void_p, c_size_t
+from .str_array import StringArray
 
 class DataArray:
     """
@@ -17,15 +18,15 @@ class DataArray:
         "_buffers",
     )
 
-    def __init__(self, n: int):
+    def __init__(self, n: int, ptr_array = None, len_array = None, buffers = None):
         self._n = n
 
         # Fixed-size arrays
-        self._ptr_array = (ctypes.c_void_p * n)()
-        self._len_array = (ctypes.c_size_t * n)()
+        self._ptr_array = ptr_array if ptr_array else (ctypes.c_void_p * n)()
+        self._len_array = len_array if len_array else (ctypes.c_size_t * n)()
 
         # Hold backing buffers to prevent GC
-        self._buffers = [None] * n
+        self._buffers = buffers if buffers else [None] * n
     
     @staticmethod
     def from_array(strings):
@@ -48,9 +49,30 @@ class DataArray:
             ptr_array[i] = ctypes.cast(buf, ctypes.c_void_p)
             len_array[i] = len(buf.value)
 
-        data_array = DataArray(n)
-        data_array._ptr_array = ptr_array
-        data_array._len_array = len_array
+        data_array = DataArray(n, ptr_array=ptr_array, len_array=len_array, buffers=buffers)
+
+        return data_array
+    
+    @staticmethod
+    def from_string_array(str_array: StringArray):
+        # Encode strings to bytes
+
+        n = len(str_array)
+
+        # Allocate fixed-size arrays
+        ptr_array = (ctypes.c_void_p * n)()
+        len_array = (ctypes.c_size_t * n)()
+        buffers = [
+            None for _ in str_array.encoded
+        ]
+
+        # Populate arrays
+        for i, buf in enumerate(str_array.c_strings):
+            ptr_array[i] = ctypes.cast(buf, ctypes.c_void_p)
+            len_array[i] = len(buf)
+            buffers[i] = ptr_array[i]
+
+        data_array = DataArray(n, ptr_array=ptr_array, len_array=len_array, buffers=buffers)
 
         return data_array
         

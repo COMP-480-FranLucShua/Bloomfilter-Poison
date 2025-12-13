@@ -28,22 +28,24 @@ def load_dataset(path: str):
     return urllist
 
 def run_pipeline(system, test_sample, attacker, attack_size):
+    print("Beginning attack")
+    print(attacker.sampler._strings[:10].to_python())
     attacker.attack(attack_size)
-    return system.query_array(DataArray.from_array(test_sample))
+    return system.query_array(test_sample)
 
-def assemble_system(buckets: int, num_hfs: int, seed: int, init_insert_size: int, rng: RandomNumberGenerator, urls) -> SystemEmulator:
+def assemble_system(buckets: int, num_hfs: int, seed: int, rng: RandomNumberGenerator, initial_insert: StringArray) -> SystemEmulator:
     bf: BloomFilter = BloomFilter(buckets, num_hfs, rng)
     system: SystemEmulator = SystemEmulator(HashSet(1024, seed), bf, rng, 5.0)
-    system.insert_array(DataArray.from_array(urls[:init_insert_size]))
+    system.insert_array(initial_insert)
     return system
 
-def assemble_naive_attacker(sys: SystemEmulator, rng: RandomNumberGenerator, urls) -> NaiveAttacker:
-    sampler: StringSampler = StringSampler(StringArray(urls), rng)
+def assemble_naive_attacker(sys: SystemEmulator, rng: RandomNumberGenerator, dataset: StringArray) -> NaiveAttacker:
+    sampler: StringSampler = StringSampler(dataset, rng)
     attacker: NaiveAttacker = NaiveAttacker(sys, sampler)
     return attacker
 
-def assemble_timing_attacker(sys: SystemEmulator, rng: RandomNumberGenerator, urls) -> TimingAttacker:
-    sampler: StringSampler = StringSampler(StringArray(urls), rng)
+def assemble_timing_attacker(sys: SystemEmulator, rng: RandomNumberGenerator, dataset: StringArray) -> TimingAttacker:
+    sampler: StringSampler = StringSampler(dataset, rng)
     attacker: TimingAttacker = TimingAttacker(sys, sampler, 0.15)
     return attacker
 
@@ -58,19 +60,29 @@ def main():
         print(e)
         sys.exit(1)
 
+    print("Starting")
+
     ## *** REPLACE WITH YAML VALUES
-    # initial_insert_size = 100000 # initial sample to 
+    initial_insert_size = 10 # initial sample to 
     # test_sample_size = 50000 # size of reserved testing set (for evaluating fp rate)
 
-    dataset = load_dataset(config.dataset.path)
+    dataset = StringArray(load_dataset(config.dataset.path))
 
+    insert_set = dataset[:initial_insert_size]
     training_set = dataset[:-10000]
     test_set = dataset[-10000:]
 
+    print("Created datasets")
+
+    print(config.seed)
+
     rng: RandomNumberGenerator = RandomNumberGenerator(config.seed)
-    system_naive = assemble_system(1024, 3, config.seed, 10, rng, training_set)
-    system_timing = assemble_system(1024, 3, config.seed, 10, rng, training_set)
-    system_sigma = assemble_system(1024, 3, config.seed, 10, rng, training_set)
+    system_naive = assemble_system(1024, 3, config.seed, rng, insert_set)
+    system_timing = assemble_system(1024, 3, config.seed, rng, insert_set)
+    system_sigma = assemble_system(1024, 3, config.seed, rng, insert_set)
+
+    print("Created systems")
+
 
     attacker_naive = assemble_naive_attacker(system_naive, rng, training_set)
     attacker_timing = assemble_timing_attacker(system_timing, rng, training_set)
@@ -79,15 +91,18 @@ def main():
     step_size = 100
     iterations = 20
 
-    test_sample = DataArray.from_array(test_set)
-
     fp_per_attacker = np.zeros((3, iterations))
 
-    for i, (attacker, system) in enumerate([(attacker_naive, system_naive), (attacker_timing, system_timing), (attacker_sigma, system_sigma)]):
-        for j in range(iterations):
-            fp_per_attacker[i,j] = run_pipeline(system, test_sample, attacker, step_size)
+    print("Initialized attack objects")
+
 
     labels = ["Naive", "Timing", "Sigma"]
+
+    for i, (attacker, system) in enumerate([(attacker_naive, system_naive), (attacker_timing, system_timing), (attacker_sigma, system_sigma)]):
+        print(f"Running attack: {labels[i]}")
+        for j in range(iterations):
+            fp_per_attacker[i,j] = run_pipeline(system, test_set, attacker, step_size)
+
 
     plt.figure()
     x = np.arange(iterations)

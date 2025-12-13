@@ -32,6 +32,8 @@ class NaiveAttacker(_C_Object):
         assert isinstance(sys, System)
         assert isinstance(sampler, Sampler)
 
+        self.sampler = sampler
+
         c_obj = lib.naive_attacker_create(sys._interface, sys._c_obj,
                                           sampler._interface, sampler._c_obj)
         
@@ -39,4 +41,6 @@ class NaiveAttacker(_C_Object):
         self._interface = ctypes.pointer(AttackerInterface.in_dll(lib, "naive_attacker_interface"))
     
     def attack(self, attack_size: int):
+        print("attacking")
         self._interface.contents.attack(self._c_obj, c_size_t(attack_size))
+        print("attacked")
