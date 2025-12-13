@@ -8,3 +8,4 @@ from .str_array import StringArray
 from .data_array import DataArray
 from .str_sampler import StringSampler
 from .naive_attacker import NaiveAttacker
+from .timing_attacker import TimingAttacker
