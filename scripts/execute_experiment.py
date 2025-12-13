@@ -5,7 +5,8 @@ from c_modules import (
     RandomNumberGenerator,
     StringArray,
     StringSampler,
-    NaiveAttacker)
+    NaiveAttacker,
+    DataArray)
 
 from yaml_parser.loader import load_yaml
 import pandas as pd
@@ -28,7 +29,7 @@ def assemble_system(buckets: int, num_hfs: int, seed: int, init_insert_size: int
     rng: RandomNumberGenerator = RandomNumberGenerator(seed)
     bf: BloomFilter = BloomFilter(buckets, num_hfs, rng)
     system: SystemEmulator = SystemEmulator(set(), bf, rng, 5.0)
-    system.insert_array(urls[:init_insert_size])
+    system.insert_array(DataArray.from_array(urls[:init_insert_size]))
     return system
 
 

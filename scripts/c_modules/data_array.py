@@ -27,6 +27,35 @@ class DataArray:
         # Hold backing buffers to prevent GC
         self._buffers = [None] * n
     
+    @staticmethod
+    def from_array(strings):
+        # Encode strings to bytes
+        encoded = [s.encode("utf-8") for s in strings]
+
+        # Allocate C-owned buffers (important!)
+        buffers = [
+            ctypes.create_string_buffer(b) for b in encoded
+        ]
+
+        n = len(buffers)
+
+        # Allocate fixed-size arrays
+        ptr_array = (ctypes.c_void_p * n)()
+        len_array = (ctypes.c_size_t * n)()
+
+        # Populate arrays
+        for i, buf in enumerate(buffers):
+            ptr_array[i] = ctypes.cast(buf, ctypes.c_void_p)
+            len_array[i] = len(buf.value)
+
+        data_array = DataArray(n)
+        data_array._ptr_array = ptr_array
+        data_array._len_array = len_array
+
+        return data_array
+        
+
+    
     def get_strs(self):
         return self._voidpp_to_strings(self._ptr_array, self._len_array, self._n)
     
