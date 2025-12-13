@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
 from c_modules import (
     SystemEmulator, 
     BloomFilter, 
@@ -56,46 +59,47 @@ def main():
         sys.exit(1)
 
     ## *** REPLACE WITH YAML VALUES
-    initial_insert_size = 100000 # initial sample to 
-    test_sample_size = 50000 # size of reserved testing set (for evaluating fp rate)
+    # initial_insert_size = 100000 # initial sample to 
+    # test_sample_size = 50000 # size of reserved testing set (for evaluating fp rate)
 
     dataset = load_dataset(config.dataset.path)
 
+    training_set = dataset[:-10000]
+    test_set = dataset[-10000:]
+
     rng: RandomNumberGenerator = RandomNumberGenerator(config.seed)
-    system_naive = assemble_system(1024, 3, config.seed, 10, rng, dataset)
-    system_timing = assemble_system(1024, 3, config.seed, 10, rng, dataset)
-    system_sigma = assemble_system(1024, 3, config.seed, 10, rng, dataset)
+    system_naive = assemble_system(1024, 3, config.seed, 10, rng, training_set)
+    system_timing = assemble_system(1024, 3, config.seed, 10, rng, training_set)
+    system_sigma = assemble_system(1024, 3, config.seed, 10, rng, training_set)
 
-    attacker_naive = assemble_naive_attacker(system_naive, rng, dataset)
-    attacker_timing = assemble_timing_attacker(system_timing, rng, dataset)
-    attacker_sigma = assemble_sigma_attacker(system_naive, system_sigma.)
+    attacker_naive = assemble_naive_attacker(system_naive, rng, training_set)
+    attacker_timing = assemble_timing_attacker(system_timing, rng, training_set)
+    attacker_sigma = assemble_sigma_attacker(system_sigma, system_sigma.filter)
+    
+    step_size = 100
+    iterations = 20
 
+    test_sample = DataArray.from_array(test_set)
 
-    with RandomNumberGenerator(12345):
-        set = HashSet(256, 123456)
-        rng = RandomNumberGenerator(123456)
-        filter = BloomFilter(4, 2, rng)
+    fp_per_attacker = np.zeros((3, iterations))
 
-        system = SystemEmulator(set, filter, rng, 1.0)
+    for i, (attacker, system) in enumerate([(attacker_naive, system_naive), (attacker_timing, system_timing), (attacker_sigma, system_sigma)]):
+        for j in range(iterations):
+            fp_per_attacker[i,j] = run_pipeline(system, test_sample, attacker, step_size)
 
-        data = StringArray(["abc", "def", "ge", "abce", "efg", "hijk"])
+    labels = ["Naive", "Timing", "Sigma"]
 
-        sampler = StringSampler(data, rng)
+    plt.figure()
+    x = np.arange(iterations)
+    for i in range(3):
+        plt.plot(x, fp_per_attacker[i], label=labels[i])
 
-        attacker = NaiveAttacker(system, sampler)
-
-        attacker.attack(4)
-
-        sample = sampler.sample_array(len(data))
-
-        print(system.query_array(sample))
-
-        attacker.close()
-        sampler.close()
-        system.close()
-        filter.close()
-        rng.close()
-        set.close()
+    plt.xlabel("Iteration")
+    plt.ylabel("False Positive Rate")
+    plt.title("False Positive Rate per Attacker")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     main()

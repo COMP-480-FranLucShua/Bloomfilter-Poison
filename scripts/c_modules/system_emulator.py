@@ -41,6 +41,8 @@ class SystemEmulator(_C_Object):
         assert isinstance(filter, Filter)
         assert isinstance(rng, Generator)
 
+        self.filter = filter
+
         c_obj = lib.sys_new(set._interface, set._c_obj,
                             filter._interface, filter._c_obj,
                             rng._interface, rng._c_obj,
