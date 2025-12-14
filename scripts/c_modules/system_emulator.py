@@ -1,5 +1,5 @@
 import ctypes
-from ctypes import c_void_p, c_double, POINTER, c_size_t
+from ctypes import c_void_p, c_double, POINTER, c_size_t, c_bool
 
 from typing import Protocol, runtime_checkable
 
@@ -83,4 +83,5 @@ class SystemEmulator(_C_Object):
         self._interface.contents.insert_array(self._c_obj,
                                              array.c_ptrs,
                                              array.c_lens,
-                                             c_size_t(len(array)))
+                                             c_size_t(len(array)),
+                                             c_bool(True))

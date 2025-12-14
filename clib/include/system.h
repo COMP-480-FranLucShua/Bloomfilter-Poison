@@ -40,7 +40,7 @@ SystemEmulator *sys_new(const Set *set, void *set_inst,
                         double delay);
 void *sys_destroy(SystemEmulator *sys);
 
-void sys_insert_array(void *, void **data_array, size_t *data_lens, size_t array_size);
+void sys_insert_array(void *, void **data_array, size_t *data_lens, size_t array_size, bool verbose);
 
 /**
  * Caller is in charge of passing an allocated query result array

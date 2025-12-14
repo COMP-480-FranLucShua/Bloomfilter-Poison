@@ -6,35 +6,35 @@
 #include "interfaces/attacker.h"
 #include "interfaces/system.h"
 #include "interfaces/sampler.h"
-#include "timing_attacker.h"
+#include "timing_attacker_st.h"
 #include "kmeans1d.h"
 
 
 
-void timing_attacker_attack(void *ta, size_t attack_size);
+void timing_attacker_st_attack(void *ta, size_t attack_size);
 
-static double train(void *self, size_t training_size, size_t insert_size);
+static double train(void *self, size_t size);
 
-const Attacker timing_attacker_interface = {
-	.attack = timing_attacker_attack,
+const Attacker timing_attacker_st_interface = {
+	.attack = timing_attacker_st_attack,
 };
 
-struct TimingAttacker {
+struct TimingAttackerST {
 	const System *sstm;
 	void *sstm_inst;
 
 	const Sampler *smplr;
 	void *smplr_inst;
 
-	double training_proportion;
+	bool is_trained;
+	double threshold;
 };
 
-TimingAttacker* timing_attacker_create(
+TimingAttackerST* timing_attacker_st_create(
 	const System *sstm, void *sstm_inst,
-	const Sampler *smplr, void *smplr_inst,
-	double training_proportion
+	const Sampler *smplr, void *smplr_inst
 ) {
-	TimingAttacker* ta = malloc(sizeof(TimingAttacker));
+	TimingAttackerST* ta = malloc(sizeof(TimingAttackerST));
 	if (!ta) return NULL;
 
 	ta->sstm = sstm;
@@ -43,34 +43,37 @@ TimingAttacker* timing_attacker_create(
 	ta->smplr = smplr;
 	ta->smplr_inst = smplr_inst;
 
-	ta->training_proportion = training_proportion;
+	ta->is_trained = false;
+	ta->threshold = 0.0;
 
 	return ta;
 }
 
-void timing_attacker_destroy(TimingAttacker* ta) {
+void timing_attacker_st_destroy(TimingAttackerST* ta) {
 	free(ta);
 }
 
-void timing_attacker_attack(void *self, size_t attack_size) {
+void timing_attacker_st_attack(void *self, size_t attack_size) {
 	if (attack_size == 0)
 		return;
 	
-	TimingAttacker *ta = (TimingAttacker *)self;
+	TimingAttackerST *ta = (TimingAttackerST *)self;
 
-	
-	// train attacker
-	size_t training_set_size = (size_t)(attack_size * ta->training_proportion);
-	size_t insert_size = training_set_size / 2;
-	
-	double threshold = train(ta, training_set_size, insert_size);
+	if (!ta->is_trained) {
+		// train ta
 
-	size_t current_attack_size = insert_size;
+		ta->threshold = train(self, attack_size);
+		ta->is_trained = true;
+
+		return;
+	}
+	// run attack
 
 	double elapsed_seconds;
 
 	void *sample = NULL;
 	size_t length;
+	size_t current_attack_size = 0;
 
 	// NOTE: sample is owned by smplr_inst
 	sample = ta->smplr->sample(ta->smplr_inst, &length);
@@ -79,7 +82,7 @@ void timing_attacker_attack(void *self, size_t attack_size) {
 	for (size_t i = 0; current_attack_size < attack_size && i < ta->smplr->length(ta->smplr_inst); i++) {
 
 		ta->sstm->query(ta->sstm_inst, sample, length, &elapsed_seconds, NULL);
-		if (elapsed_seconds < threshold) {
+		if (elapsed_seconds < ta->threshold) {
 			// true negative from system, meaning at least one corresponding bit is unset
 			ta->sstm->insert(ta->sstm_inst, sample, length);
 			current_attack_size ++;
@@ -90,8 +93,9 @@ void timing_attacker_attack(void *self, size_t attack_size) {
 }
 
 
-static double train(void *self, size_t training_size, size_t insert_size) {
-	TimingAttacker *ta = self;
+static double train(void *self, size_t insert_size) {
+	size_t training_size = insert_size * 2;
+	TimingAttackerST *ta = self;
 
 	void **training_set_keys = malloc(sizeof(void *) * training_size);
 	size_t *training_set_lens = malloc(sizeof(size_t) * training_size);

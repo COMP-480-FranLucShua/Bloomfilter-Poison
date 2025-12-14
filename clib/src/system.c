@@ -4,6 +4,7 @@
 #include "interfaces/generator.h"
 #include "interfaces/filter.h"
 #include "interfaces/set.h"
+#include "loading_bar.h"
 
 const System system_emulator_interface = {
     .query = sys_query,
@@ -58,12 +59,21 @@ void sys_insert(void *self, void *data, size_t len) {
     sys->filter->insert(sys->filter_inst, data, len);
 }
 
-void sys_insert_array(void *self, void **data_array, size_t *data_lens, size_t array_size) {
+void sys_insert_array(void *self, void **data_array, size_t *data_lens, size_t array_size, bool verbose) {
     SystemEmulator *sys = self;
 
+    lb_bar_t bar;
+
+    if (verbose)
+        lb_bar_init(&bar, array_size, "Inserting array into system", stdout);
+    
     for (size_t i = 0; i < array_size; i++) {
         sys_insert(sys, data_array[i], data_lens[i]);
+        if (verbose)
+            lb_bar_update(&bar, i);
     }
+    if (verbose)
+        lb_bar_done(&bar);
 }
 
 bool sys_query(void *self, void *data, size_t len, double *delay, bool *fp) {

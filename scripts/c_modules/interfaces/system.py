@@ -31,6 +31,7 @@ INSERT_ARRAY_FN = ctypes.CFUNCTYPE(
     POINTER(c_void_p),   # void **keys
     POINTER(c_size_t),   # size_t *lens
     c_size_t,            # array_size
+    c_bool,              # verbose
 )
 
 QUERY_ARRAY_FN = ctypes.CFUNCTYPE(

@@ -12,18 +12,18 @@ seed: 42
 # Bloom Filter
 # ------------------
 bloom_filter:
-  bit_array_size: 1000000
-  num_hash_functions: 7
-  target_false_positive_rate: 0.01
+  bit_array_size: # power of 2
+    - 16
+    - 20
+    - 24
+    - 26
+
+  num_hash_functions: 5
 
 # ------------------
 # System Emulator
 # ------------------
 system_emulator:
-  gamma_distribution:
-    shape: 2.0
-    scale: 1.0
-
   fixed_positive_delay_ms: 5.0   # Extra delay for Bloom positives
 
 # ------------------
@@ -31,23 +31,25 @@ system_emulator:
 # ------------------
 dataset:
   path: "data/malicious_urls.txt"
-  benign_label: 0
-  malicious_label: 1
 
-  # Preload phase
-  preload_malicious_count: 50000
+  init_size:
+    - 1000
+    - 10000
+    - 100000
+    - 100000
 
-  # Pools
-  attacker_url_pool_size: 600000
-  evaluation_set_size: 50000
+  test_size: 50000
 
 # ------------------
-# Experiment Loop
+# Experiment
 # ------------------
 experiment:
-  max_insertions_per_attacker: 100000
-  measurement_interval: 1000     # Measure FP rate every N insertions
-  num_trials: 5                  # For averaging results
+  attack_size:
+    - 250
+    - 5000
+    - 7500
+    - 7500
+  attack_iterations: 50
 
 # ------------------
 # Attackers
@@ -57,41 +59,27 @@ attackers:
   enabled:
     - naive
     - timing
+    - timing_st
     - sigma
 
   # ------------------------
   # Attacker 1: Naive
   # ------------------------
-  naive:
-    batch_size: 1
+  naive: {}
 
   # ------------------------
   # Attacker 2: Timing Heuristic
   # ------------------------
   timing:
     # Training phase
-    initial_sample_size: 1000
-    kmeans_clusters: 2
+    training_proportion:
+      - 0.15
 
-    # Optional safety controls
-    max_retries_per_step: 10
-
+  timing_st: {}
 
   sigma: {}
 
 # ----------------------------
 # Output & Logging
 # ----------------------------
-logging:
-  log_level: "INFO"
-  save_raw_results: true
-  output_directory: "results/"
-  plot_formats: ["png", "pdf"]
-
-# ----------------------------
-# Evaluation Metrics
-# ----------------------------
-metrics:
-  track_false_positive_rate: true
-  track_query_latency: true
-  track_insertion_efficiency: true
+output_directory: "./results/"

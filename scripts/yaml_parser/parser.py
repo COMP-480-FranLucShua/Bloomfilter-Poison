@@ -4,13 +4,11 @@ from .types import *
 def parse_raw_to_config(raw: dict[str, Any]) -> ExperimentConfigRoot:
     return ExperimentConfigRoot(
         seed=raw["seed"],
+        output_directory=raw["output_directory"],
 
         bloom_filter=BloomFilterConfig(**raw[Section.BLOOM_FILTER.value]),
 
         system_emulator=SystemEmulatorConfig(
-            gamma_distribution=GammaDistributionConfig(
-                **raw[Section.SYSTEM_EMULATOR.value]["gamma_distribution"]
-            ),
             fixed_positive_delay_ms=raw[Section.SYSTEM_EMULATOR.value]["fixed_positive_delay_ms"]
         ),
 
@@ -28,6 +26,9 @@ def parse_raw_to_config(raw: dict[str, Any]) -> ExperimentConfigRoot:
             ),
             AttackerType.TIMING: TimingAttackerConfig(
                 **raw[Section.ATTACKERS.value][AttackerType.TIMING.value]
+            ),
+            AttackerType.TIMING_ST: TimingAttackerSTConfig(
+                **raw[Section.ATTACKERS.value][AttackerType.TIMING_ST.value]
             ),
             AttackerType.SIGMA: SigmaAttackerConfig(
             ),

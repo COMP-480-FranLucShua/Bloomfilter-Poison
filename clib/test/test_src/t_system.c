@@ -147,7 +147,7 @@ MunitResult t_system_array_api(const MunitParameter params[], void *fixture) {
         lens[i] = sizeof(int);
     }
 
-    sys_insert_array(sys, ptrs, lens, n);
+    sys_insert_array(sys, ptrs, lens, n, false);
 
     bool results[n];
     double delays[n];

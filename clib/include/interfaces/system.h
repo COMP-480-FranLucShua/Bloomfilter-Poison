@@ -10,7 +10,7 @@ typedef struct {
 	bool (*query)(void *self, void *key, size_t len, double *delay, bool *fp);
 	void (*insert)(void *self, void *key, size_t len);
 
-	void (*insert_array)(void *self, void **keys, size_t *lens, size_t array_size);
+	void (*insert_array)(void *self, void **keys, size_t *lens, size_t array_size, bool verbose);
 
 	/**
 	 * keys, lens, queries, and delays must be array_size len

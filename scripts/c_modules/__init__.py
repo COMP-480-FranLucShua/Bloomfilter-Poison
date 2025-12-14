@@ -9,4 +9,5 @@ from .data_array import DataArray
 from .str_sampler import StringSampler
 from .naive_attacker import NaiveAttacker
 from .timing_attacker import TimingAttacker
+from .timing_attacker_st import TimingAttackerST
 from .sigma_attacker import SigmaAttacker
