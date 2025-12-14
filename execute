@@ -2,6 +2,7 @@
 source ./venv/bin/activate
 make
 
+mkdir -p ./data
 wget -nc http://www.cim.mcgill.ca/~dudek/206/Logs/AOL-user-ct-collection/user-ct-test-collection-01.txt -O ./data/malicious_urls.txt
 
 python ./scripts/execute_experiment.py
