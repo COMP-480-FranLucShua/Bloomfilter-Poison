@@ -32,6 +32,7 @@ system_emulator:
 dataset:
   path: "data/malicious_urls.txt"
 
+  # number of datapoints to insert into the system before running experiments
   init_size:
     - 1000
     - 10000
@@ -44,11 +45,13 @@ dataset:
 # Experiment
 # ------------------
 experiment:
+  # number of allowed insertions for a single attack
   attack_size:
     - 250
     - 5000
     - 7500
     - 7500
+  # number of attacks
   attack_iterations: 50
 
 # ------------------
@@ -75,6 +78,11 @@ attackers:
     training_proportion:
       - 0.15
 
+  # ------------------------
+  # Attacker 2.5: Timing Heuristic Single Training
+  #
+  # unlinke attacker 2, only trains for the delay threshold on the first attack
+  # ------------------------
   timing_st: {}
 
   sigma: {}
